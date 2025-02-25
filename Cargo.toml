@@ -1,0 +1,29 @@
+[package]
+name = "scs-aa-indexer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }  # Async runtime
+reqwest = { version = "0.11", features = ["json"] } # HTTP requests
+serde = { version = "1.0", features = ["derive"] }  # Serialization
+dotenv = "0.15" # Environment variables
+log = "0.4" # Logging
+env_logger = "0.10" # Logger initialization
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio"] } # Database
+redis = "0.23" # Redis for caching
+opensearch = "2.3.0" # OpenSearch indexing
+warp = "0.3" # Web API (REST/GraphQL)
+async-trait = "0.1" # Async trait for better modularity
+eyre = "0.6" # Error handling
+toml = "0.7"
+kafka = "0.10"
+
+# Correct Alloy dependencies (latest structure)
+alloy = { version = "0.11", features = ["full"] }
+futures-util = "0.3"   
+url = "2.3"
+hex-literal = "0.3"
+
+[dev-dependencies]
+tokio-test = "0.4"

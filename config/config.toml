@@ -1,0 +1,26 @@
+[general]
+indexer_name = "Scs Event Indexer"
+polling_interval = 5  # seconds
+
+[chains.minato]
+rpc_url = "https://rpc.minato.soneium.org"
+contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
+chainId= 1946
+
+[chains.soneium]
+rpc_url = "https://rpc.soneium.org"
+contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
+chainId = 1868
+
+[storage]
+use_postgres = true
+postgres_url = "postgresql://paymaster:password@postgres:5432/paymaster_db?sslmode=disable"
+
+use_redis = true
+redis_url = "redis://127.0.0.1:6379"
+
+use_opensearch = false
+opensearch_url = "http://localhost:9200"
+
+use_kafka = false
+kafka_broker = "localhost:9092"
