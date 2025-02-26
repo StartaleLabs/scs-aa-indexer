@@ -1,5 +1,5 @@
 use tokio::sync::mpsc;
-use tokio::task;
+use tokio::time::{sleep, Duration};
 
 mod config;
 mod listener;
@@ -15,7 +15,8 @@ async fn main() {
     println!("Loaded configuration: {:?}", config);
 
     let rpc_url = &config.chains.minato.rpc_url;
-    let contract_address = config.chains.minato.contract_address.clone();
+    let pm_contract_address = config.chains.minato.contract_address.clone();
+    let entry_point_address = config.entrypoint.contract_address.clone();
 
     // 🔹 Create a channel for event logs (Sender & Receiver)
     let (log_sender, log_receiver) = mpsc::channel(100);
@@ -26,16 +27,21 @@ async fn main() {
     // 🔹 Initialize Event Processor
     let event_processor = ProcessEvent::new();
 
-    // 🔹 Spawn the event listener in a separate Tokio task
-    let listener_handle = task::spawn(async move {
-        event_listener.listen(&contract_address, log_sender).await;
+    tokio::spawn(async move {
+        loop {
+            println!("🔍 Listening for events...");
+            event_listener.listen(vec![pm_contract_address.clone(), entry_point_address.clone()], log_sender.clone()).await;
+
+            sleep(Duration::from_secs(config.general.polling_interval)).await;
+        }
     });
 
-    // 🔹 Spawn the event processor in another Tokio task
-    let processor_handle = task::spawn(async move {
+    tokio::spawn(async move {
         event_processor.process(log_receiver).await;
     });
 
-    // 🔹 Wait for both tasks to finish
-    let _ = tokio::join!(listener_handle, processor_handle);
+    // 🔹 Keep the main thread alive
+    loop {
+        sleep(Duration::from_secs(3600)).await;
+    }
 }

@@ -6,6 +6,7 @@ pub struct Config {
     pub general: GeneralConfig,
     pub chains: ChainsConfig,
     pub storage: StorageConfig,
+    pub entrypoint: EntrypointConfig,
 }
 
 
@@ -25,7 +26,7 @@ pub struct ChainsConfig {
 pub struct ChainConfig {
     pub rpc_url: String,
     pub contract_address: String,
-    pub chainId : u32,
+    pub chain_id : u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +39,11 @@ pub struct StorageConfig {
     pub opensearch_url: String,
     pub use_kafka: bool,
     pub kafka_broker: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EntrypointConfig {
+    pub contract_address: String,
 }
 
 impl Config {

@@ -5,12 +5,15 @@ polling_interval = 5  # seconds
 [chains.minato]
 rpc_url = "https://rpc.minato.soneium.org"
 contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
-chainId= 1946
+chain_id= 1946
 
 [chains.soneium]
 rpc_url = "https://rpc.soneium.org"
 contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
-chainId = 1868
+chain_id = 1868
+
+[entrypoint]
+contract_address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
 
 [storage]
 use_postgres = true

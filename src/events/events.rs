@@ -4,8 +4,11 @@ use alloy::{
 };
 
 sol! {
-    event DepositAdded(address indexed user, uint256 amount);
-    event GasBalanceDeducted(address indexed user, uint256 amount, uint256 premium, uint256 mode);
-    event WithdrawalRequested(address indexed sponsorAddress, address indexed withdrawAddress, uint256 amount);
-    event WithdrawalExecuted(address indexed sponsorAddress, address indexed withdrawAddress, uint256 amount);
+    // Sponsership paymaster events
+    event UserOperationSponsored(bytes32 indexed userOpHash, address indexed user)
+    event GasBalanceDeducted(address indexed user, uint256 amount, uint256 premium, uint8 mode);
+    event RefundProcessed(address indexed user, uint256 amount)
+    // Entry point events
+    event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)
 }
+
