@@ -42,8 +42,8 @@ pub struct EventConfig {
 pub struct StorageConfig {
     pub use_redis: bool,
     pub redis_url: String,
-    pub use_kafka: bool,
     pub kafka_broker: String,
+    pub kafka_topics: Vec<String>,
 }
 
 

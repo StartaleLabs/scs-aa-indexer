@@ -4,18 +4,22 @@ use tokio::time::{sleep, Duration};
 mod config;
 mod listener;
 mod processor;
+mod storage;
 
 use crate::listener::listener::EventListener;
 use crate::processor::processor::ProcessEvent;
 use crate::config::config::Config;
+use crate::storage::kafka::KafkaStorage;
 #[tokio::main]
 async fn main() {
     let config = Config::load();
     println!("Loaded configuration: {:?}", &config);
 
     let (log_sender, log_receiver) = mpsc::channel(100);
-    let event_processor = ProcessEvent::new(&config);
 
+    let kafka = KafkaStorage::new(&config.storage.kafka_broker, &config.storage.kafka_topics[0]);
+
+    let event_processor = ProcessEvent::new(&config, kafka);
     let chains = config.chains.clone();
     for (chain_name, chain) in chains {
         if chain.active {

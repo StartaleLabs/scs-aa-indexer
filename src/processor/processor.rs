@@ -1,11 +1,9 @@
 
+use alloy::serde::storage;
 use tokio::sync::mpsc;
 use alloy::{
     rpc::types::Log as RpcLog,
-    primitives::{
-        B256,
-        Log as AlloyLog
-    }
+    primitives::B256,
 };
 
 
@@ -15,14 +13,16 @@ use crate::{
     config::config::Config, 
     processor::handler::process_event
 };
+use crate::storage::Storage;
 
-pub struct ProcessEvent {
-    event_map: HashMap<B256, (String, Vec<String>)>, // Maps event signature → (event name, param types)
+pub struct ProcessEvent<S: Storage> {
+    event_map: HashMap<B256, (String, Vec<String>)>,
+    storage: S,
 }
 
-impl ProcessEvent {
+impl<S: Storage> ProcessEvent<S> {
     /// **Initialize Processor with Dynamic Event Mapping**
-    pub fn new(config: &Config) -> Self {
+    pub fn new(config: &Config, storage: S) -> Self {
         let mut event_map = HashMap::new();
 
         // 🔹 Iterate over all chains & their contracts
@@ -47,7 +47,7 @@ impl ProcessEvent {
             }
         }
 
-        Self { event_map }
+        Self { event_map, storage }
     }
 
     /// **Process Incoming Logs Dynamically**
@@ -58,7 +58,7 @@ impl ProcessEvent {
             if let Some(event_signature) = log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
                     println!("✅ Processing Event: {}", event_name);
-                    process_event(event_name, &log, &mut previous_log);
+                    process_event(event_name, &log, &mut previous_log, &self.storage).await;
                 } else {
                     println!("⚠️ Unknown event signature: {:?}", event_signature);
                 }

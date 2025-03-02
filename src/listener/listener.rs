@@ -57,7 +57,6 @@ impl EventListener {
 
         // **Extract Events from Contracts**
         for contract in &chain_config.contracts {
-            println!("Listening to contract: {:?}", contract.name);
             for event in &contract.events {
                 event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
             }
@@ -65,7 +64,6 @@ impl EventListener {
 
         // **Extract Events from EntryPoints**
         for entrypoint in &chain_config.entrypoints {
-            println!("Listening to contract: EntryPoint Version {}", entrypoint.version);
             for event in &entrypoint.events {
                 event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
             }

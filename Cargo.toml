@@ -27,6 +27,7 @@ hex-literal = "0.3"
 alloy-sol-types = "0.8.22"
 derive_more = { version = "1.0.0", features = ["display"] }
 rdkafka = "0.37.0"
+serde_json = "1.0.139"
 
 [dev-dependencies]
 tokio-test = "0.4"

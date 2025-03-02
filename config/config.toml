@@ -30,3 +30,4 @@ use_redis = true
 redis_url = "redis://127.0.0.1:6379"
 use_kafka = false
 kafka_broker = "localhost:9092"
+kafka_topics = ["aa_event_logs"]
