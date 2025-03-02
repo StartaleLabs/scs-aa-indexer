@@ -58,7 +58,7 @@ impl EventListener {
         match self.provider.get_logs(&filter).await {
             Ok(logs) => {
                 for log in logs {
-                    eprint!("Log: {:?}", log);
+                    eprint!("Logs from event listender: {:?}", log);
                     // **Send Log to Channel**
                     if sender.send(log).await.is_err() {
                         eprintln!("Failed to send log to channel");
