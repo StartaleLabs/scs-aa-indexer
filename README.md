@@ -1,13 +1,13 @@
 ## Code Architecture for L2 Blockchain Event Indexer (Rust)
 A modular, scalable, and extensible indexing service that listens to any events on Ethereum & L2 chains like Sonieum and Minato. This should also allow for future expansion to other blockchain events. The indexer listens to AA related events as now.
 
-## 1️⃣ High-Level Architecture Overview
+# 1️⃣ High-Level Architecture Overview
 # 🔹 Components Overview
 Indexer Core - Handles blockchain event streaming and processing.
 Storage Layer - Stores indexed data (Redis or Message queue like Kafka/NATS/RabbitMQ).
 Configuration Layer - Manages environment variables and chain-specific configurations.
 
-## 2️⃣ Core Components & Their Roles
+# 2️⃣ Core Components & Their Roles
 # 🟢 (1) Blockchain Event Listener
 Uses Alloy (ethers-rs alternative) to listen for Paymaster contract events.
 Can connect to multiple RPC endpoints for redundancy.
