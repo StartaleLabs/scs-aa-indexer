@@ -1,4 +1,4 @@
-# Blockchain Event Indexer (Rust)
+# Blockchain AA Event Indexer (Rust)
 A modular, scalable, and extensible indexing service that listens to any events on Ethereum & L2 chains like Sonieum and Minato. This should also allow for future expansion to other blockchain events. The indexer listens to AA related events as now.
 
 ## 1️⃣ High-Level Architecture Overview
