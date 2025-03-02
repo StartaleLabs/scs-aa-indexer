@@ -1,29 +1,32 @@
 [general]
-indexer_name = "Scs Event Indexer"
-polling_interval = 5  # seconds
+indexer_name = "SCS AA Event Indexer"
+polling_interval = 5
 
 [chains.minato]
 rpc_url = "https://rpc.minato.soneium.org"
-contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
 chain_id= 1946
+block_time= 2
+polling_blocks= 5 
+active= true
 
-[chains.soneium]
-rpc_url = "https://rpc.soneium.org"
-contract_address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
-chain_id = 1868
+[[chains.minato.contracts]]
+name = "Paymaster"
+address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
+events = [
+    { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
+    { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
+    { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
+]
 
-[entrypoint]
+[[chains.minato.entrypoints]]
+version = "0.7"
 contract_address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+events = [
+    { signature = "0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f", name = "UserOperationEvent", params = ["bytes32", "address", "address", "uint256", "bool", "uint256", "uint256"] }
+]
 
 [storage]
-use_postgres = true
-postgres_url = "postgresql://paymaster:password@postgres:5432/paymaster_db?sslmode=disable"
-
 use_redis = true
 redis_url = "redis://127.0.0.1:6379"
-
-use_opensearch = false
-opensearch_url = "http://localhost:9200"
-
 use_kafka = false
 kafka_broker = "localhost:9092"

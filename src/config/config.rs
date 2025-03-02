@@ -1,49 +1,57 @@
 use serde::Deserialize;
-use std::fs;
+use std::{collections::HashMap, fs};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub general: GeneralConfig,
-    pub chains: ChainsConfig,
+    pub chains: HashMap<String, ChainConfig>,
     pub storage: StorageConfig,
-    pub entrypoint: EntrypointConfig,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct ContractConfig {
+    pub name: String,
+    pub address: String,
+    pub events: Vec<EventConfig>,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct GeneralConfig {
     pub indexer_name: String,
-    pub polling_interval: u64,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct ChainsConfig {
-    pub soneium: ChainConfig,
-    pub minato: ChainConfig,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug,Clone, Deserialize)]
 pub struct ChainConfig {
+    pub active: bool,
     pub rpc_url: String,
-    pub contract_address: String,
-    pub chain_id : u32,
+    pub chain_id: u64,
+    pub block_time: u64,
+    pub polling_blocks: u64,
+    pub contracts: Vec<ContractConfig>,
+    pub entrypoints: Vec<EntryPointConfig>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EventConfig {
+    pub signature: String,    // ✅ Event signature hash (e.g., "0x4962...")
+    pub name: String,         // ✅ Event name (e.g., "UserOperationEvent")
+    pub params: Vec<String>,  // ✅ Event parameter types (e.g., ["bytes32", "address", ...])
 }
 
 #[derive(Debug, Deserialize)]
 pub struct StorageConfig {
-    pub use_postgres: bool,
-    pub postgres_url: String,
     pub use_redis: bool,
     pub redis_url: String,
-    pub use_opensearch: bool,
-    pub opensearch_url: String,
     pub use_kafka: bool,
     pub kafka_broker: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct EntrypointConfig {
+
+#[derive(Debug,Clone, Deserialize)]
+pub struct EntryPointConfig {
+    pub version: String,
     pub contract_address: String,
+    pub events: Vec<EventConfig>,
 }
 
 impl Config {

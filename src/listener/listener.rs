@@ -8,6 +8,7 @@ use alloy::{
 use std::str::FromStr;
 use tokio::sync::mpsc;
 use url::Url;
+use crate::config::config::ChainConfig;
 
 /// **EventListener Struct**
 pub struct EventListener {
@@ -31,35 +32,58 @@ impl EventListener {
         Self { provider }
     }
 
-    /// **Listen for Events on Paymaster Contract**
-    pub async fn listen(&self, contracts: Vec<String>, sender: mpsc::Sender<Log>) {
+    pub async fn listen_events(&self, chain_config: &ChainConfig, sender: mpsc::Sender<Log>) {
+       if !chain_config.active {
+           return;
+       }
 
-        let contract_addresses = contracts.iter().map(|addr| Address::from_str(addr).expect("Invalid contract address")).collect::<Vec<Address>>();
+       let contract_addresses: Vec<Address> = chain_config
+            .contracts
+            .iter()
+            .map(|c| Address::from_str(&c.address).expect("Invalid contract address"))
+            .collect();
 
-        // **Event Topics** (Replace with actual event signatures)
+       
+        let entrypoint_addresses: Vec<Address> = chain_config
+            .entrypoints
+            .iter()
+            .map(|ep| Address::from_str(&ep.contract_address).expect("Invalid entrypoint address"))
+            .collect();
 
-        // Event for User operation from Entry point
-        let user_operation_event = B256::from_str("0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f").unwrap();
-        
-        // Events for User Sponsored and Gas Refunded from Paymaster
-        let gas_balance_deducted = B256::from_str("0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db").unwrap();
-        let user_sponsored= B256::from_str("0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7").unwrap();
-        let refund_processed = B256::from_str("0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833").unwrap();
+        // **Combine Paymaster & EntryPoint Addresses**
+        let all_contract_addresses = [contract_addresses, entrypoint_addresses].concat();
 
-        // Filter to fetch paymaster events
+        let mut event_signatures: Vec<B256> = Vec::new();
+
+        // **Extract Events from Contracts**
+        for contract in &chain_config.contracts {
+            println!("Listening to contract: {:?}", contract.name);
+            for event in &contract.events {
+                event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
+            }
+        }
+
+        // **Extract Events from EntryPoints**
+        for entrypoint in &chain_config.entrypoints {
+            println!("Listening to contract: EntryPoint Version {}", entrypoint.version);
+            for event in &entrypoint.events {
+                event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
+            }
+        }
+
         let latest_block = self.provider.get_block_number().await.unwrap();
+        let from_block = latest_block - chain_config.polling_blocks;
         let filter = Filter::new()
-            .address(contract_addresses)
-            .event_signature(vec![gas_balance_deducted, user_operation_event, user_sponsored, refund_processed])
-            .from_block((latest_block - 50)) // Fetch last 100 blocks
+            .address(all_contract_addresses)
+            .event_signature(event_signatures)
+            .from_block(from_block)
             .to_block(latest_block);
-        
+
         // **Retrieve Logs**
         match self.provider.get_logs(&filter).await {
             Ok(logs) => {
                 for log in logs {
-                    eprint!("Logs from event listender: {:?}", log);
-                    // **Send Log to Channel**
+                    eprint!("Log: {:?}", log);
                     if sender.send(log).await.is_err() {
                         eprintln!("Failed to send log to channel");
                     }
@@ -68,4 +92,5 @@ impl EventListener {
             Err(e) => eprintln!("Error fetching logs: {:?}", e),
         }
     }
+    
 }
