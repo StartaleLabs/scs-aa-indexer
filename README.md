@@ -39,4 +39,6 @@ Kafka/NATS - Streaming for real-time processing.
 Uses .env and config.toml to manage RPC URLs, contracts, events and storage settings.
 Supports multiple chains with different contract addresses as well as different event signatures.
 
-![Uploading Screenshot 2025-03-02 at 9.23.31 PM.png…]()
+<img width="1158" alt="Screenshot 2025-03-02 at 9 26 01 PM" src="https://github.com/user-attachments/assets/7dda1bd8-0639-4ebb-aabd-78184c1d12b6" />
+
+
