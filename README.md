@@ -1,6 +1,26 @@
 # Blockchain AA Event Indexer (Rust)
 A modular, scalable, and extensible indexing service that listens to any events on Ethereum & L2 chains like Sonieum and Minato. This should also allow for future expansion to other blockchain events. The indexer listens to AA related events as now.
 
+## 🔍 How Our Indexer Works:
+
+### Alloy's RPC Client & Provider:
+We use alloy-rpc-client and alloy-provider to connect to the blockchain.
+It sends JSON-RPC requests directly to the blockchain nodes (like Alchemy, Infura, or self-hosted RPCs).
+
+### Filtering Events:
+We manually define event signatures and contract addresses in config.toml.
+
+### Using Filter::new(), we specify the:
+Contract address to listen for events.
+Event signatures (topics).
+From and to block range (polling the latest N blocks).
+
+### Polling Mechanism:
+The indexer repeatedly queries eth_getLogs every polling_blocks * block_time seconds.
+It fetches logs within the specified block range.
+This is a direct approach rather than indexing the full blockchain state like The Graph.
+
+
 ## 1️⃣ High-Level Architecture Overview
 ## 🔹 Components Overview
 Indexer Core - Handles blockchain event streaming and processing.
