@@ -20,6 +20,9 @@ The indexer repeatedly queries eth_getLogs every polling_blocks * block_time sec
 It fetches logs within the specified block range.
 This is a direct approach rather than indexing the full blockchain state like The Graph.
 
+### Processing & Decoding Logs:
+When logs are received, they are:
+Decoded using alloy_sol_types::SolEvent and forwarded to storage options.
 
 ## 1️⃣ High-Level Architecture Overview
 ## 🔹 Components Overview
