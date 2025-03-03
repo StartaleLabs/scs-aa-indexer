@@ -44,3 +44,9 @@ Supports multiple chains with different contract addresses as well as different 
 <img width="1158" alt="Screenshot 2025-03-02 at 9 26 01 PM" src="https://github.com/user-attachments/assets/7dda1bd8-0639-4ebb-aabd-78184c1d12b6" />
 
 
+## :four: Run Indexer Locally
+
+- Create .env file similar to .env.examples
+- Start services Redis and Kafka locally. Can use docker image or brew service start
+- Optionally: Update/Add all contracts, event signatures and chain configuration required in config/config.toml file.
+- Run in terminal: RUST_LOG=debug cargo run

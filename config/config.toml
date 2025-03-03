@@ -2,7 +2,8 @@
 indexer_name = "SCS AA Event Indexer"
 
 [chains.minato]
-rpc_url = "https://rpc.minato.soneium.org"
+# Import RPC url from .env file
+rpc_url = ""
 chain_id= 1946
 block_time= 2
 polling_blocks= 5 
@@ -25,8 +26,9 @@ events = [
 ]
 
 [storage]
+# Import storage urls and topics from .env file
 use_redis = true
-redis_url = "redis://127.0.0.1:6379"
+redis_url = ""
 use_kafka = false
-kafka_broker = "localhost:9092"
-kafka_topics = ["aa_event_logs"]
+kafka_broker = ""
+kafka_topics = [""]

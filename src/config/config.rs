@@ -1,5 +1,6 @@
 use serde::Deserialize;
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, env};
+use dotenv::dotenv;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -47,10 +48,36 @@ pub struct StorageConfig {
 
 impl Config {
     pub fn load() -> Self {
+        dotenv().ok();
+        
+        // 🔹 **Load Configuration from config.toml file**
         let config_contents = fs::read_to_string("config/config.toml")
             .expect("Failed to read config file");
 
-        toml::from_str(&config_contents)
-            .expect("Failed to parse config file")
+
+        let mut config: Config =
+            toml::from_str(&config_contents).expect("Failed to parse config file");
+
+        // 🔹 **Override Chain RPC URLs Dynamically from ENV**
+        for (chain_name, chain_config) in config.chains.iter_mut() {
+            let env_var_name = format!("{}_RPC_URL", chain_name.to_uppercase());
+            if let Ok(rpc_url) = env::var(&env_var_name) {
+                chain_config.rpc_url = rpc_url;
+            }
+        }
+
+        // 🔹 **Override Storage Configuration Dynamically ENV**
+        if let Ok(redis_url) = env::var("REDIS_URL") {
+            config.storage.redis_url = redis_url;
+        }
+        if let Ok(kafka_broker) = env::var("KAFKA_BROKER") {
+            config.storage.kafka_broker = kafka_broker;
+        }
+        if let Ok(kafka_topics) = env::var("KAFKA_TOPICS") {
+            config.storage.kafka_topics = kafka_topics.split(',').map(String::from).collect();
+        }
+
+        config
+
     }
 }
