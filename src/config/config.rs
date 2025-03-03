@@ -28,7 +28,6 @@ pub struct ChainConfig {
     pub block_time: u64,
     pub polling_blocks: u64,
     pub contracts: Vec<ContractConfig>,
-    pub entrypoints: Vec<EntryPointConfig>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -44,14 +43,6 @@ pub struct StorageConfig {
     pub redis_url: String,
     pub kafka_broker: String,
     pub kafka_topics: Vec<String>,
-}
-
-
-#[derive(Debug,Clone, Deserialize)]
-pub struct EntryPointConfig {
-    pub version: String,
-    pub contract_address: String,
-    pub events: Vec<EventConfig>,
 }
 
 impl Config {

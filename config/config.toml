@@ -9,7 +9,7 @@ polling_blocks= 5
 active= true
 
 [[chains.minato.contracts]]
-name = "Paymaster"
+name = "Sponsership_Paymaster"
 address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
 events = [
     { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
@@ -17,9 +17,9 @@ events = [
     { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
 ]
 
-[[chains.minato.entrypoints]]
-version = "0.7"
-contract_address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+[[chains.minato.contracts]]
+name = "Entrypoint_V0.7"
+address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
 events = [
     { signature = "0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f", name = "UserOperationEvent", params = ["bytes32", "address", "address", "uint256", "bool", "uint256", "uint256"] }
 ]

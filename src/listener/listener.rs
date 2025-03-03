@@ -36,43 +36,27 @@ impl EventListener {
        if !chain_config.active {
            return;
        }
-
+       
+       // **Extract Contract Addresses**
        let contract_addresses: Vec<Address> = chain_config
             .contracts
             .iter()
             .map(|c| Address::from_str(&c.address).expect("Invalid contract address"))
             .collect();
 
-       
-        let entrypoint_addresses: Vec<Address> = chain_config
-            .entrypoints
-            .iter()
-            .map(|ep| Address::from_str(&ep.contract_address).expect("Invalid entrypoint address"))
-            .collect();
-
-        // **Combine Paymaster & EntryPoint Addresses**
-        let all_contract_addresses = [contract_addresses, entrypoint_addresses].concat();
-
-        let mut event_signatures: Vec<B256> = Vec::new();
-
         // **Extract Events from Contracts**
+        let mut event_signatures: Vec<B256> = Vec::new();
         for contract in &chain_config.contracts {
             for event in &contract.events {
                 event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
             }
         }
 
-        // **Extract Events from EntryPoints**
-        for entrypoint in &chain_config.entrypoints {
-            for event in &entrypoint.events {
-                event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
-            }
-        }
-
+        // **Create Filter for blockchain indexing**
         let latest_block = self.provider.get_block_number().await.unwrap();
         let from_block = latest_block - chain_config.polling_blocks;
         let filter = Filter::new()
-            .address(all_contract_addresses)
+            .address(contract_addresses)
             .event_signature(event_signatures)
             .from_block(from_block)
             .to_block(latest_block);

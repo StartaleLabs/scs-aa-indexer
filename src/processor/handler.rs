@@ -8,7 +8,7 @@ use scs_aa_indexer::events::events::{
 };
 use crate::storage::Storage;
 
-/// **Process a log based on the event name**
+// **Process a log based on the event name**
 pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, storage: &S) {
     let alloy_log = AlloyLog::from(log.clone());
 

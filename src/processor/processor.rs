@@ -21,7 +21,7 @@ pub struct ProcessEvent<S: Storage> {
 }
 
 impl<S: Storage> ProcessEvent<S> {
-    /// **Initialize Processor with Dynamic Event Mapping**
+    // **Initialize Processor with Dynamic Event Mapping**
     pub fn new(config: &Config, storage: S) -> Self {
         let mut event_map = HashMap::new();
 
@@ -35,22 +35,11 @@ impl<S: Storage> ProcessEvent<S> {
                     event_map.insert(event_sig, (event.name.clone(), event.params.clone()));
                 }
             }
-
-            // 🔹 Iterate over entrypoints
-            for entrypoint in &chain.entrypoints {
-                for event in &entrypoint.events {
-                    let event_sig = B256::from_slice(
-                        &hex::decode(event.signature.trim_start_matches("0x")).expect("Invalid event signature"),
-                    );
-                    event_map.insert(event_sig, (event.name.clone(), event.params.clone()));
-                }
-            }
         }
-
         Self { event_map, storage }
     }
 
-    /// **Process Incoming Logs Dynamically**
+    // **Process Incoming Logs Dynamically**
     pub async fn process(&self, mut receiver: mpsc::Receiver<RpcLog>) {
         let mut previous_log: Option<RpcLog> = None;
 
