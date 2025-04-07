@@ -60,7 +60,7 @@ impl Config {
 
         // 🔹 **Override Chain RPC URLs Dynamically from ENV**
         for (chain_name, chain_config) in config.chains.iter_mut() {
-            let env_var_name = format!("{}_RPC_URL", chain_name.to_uppercase());
+            let env_var_name: String = format!("{}_RPC_URL", chain_name.to_uppercase());
             if let Ok(rpc_url) = env::var(&env_var_name) {
                 chain_config.rpc_url = rpc_url;
             }

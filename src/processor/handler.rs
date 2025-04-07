@@ -4,7 +4,7 @@ use alloy::{
     rpc::types::Log as RpcLog,
 };
 use scs_aa_indexer::events::events::{
-    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored,
+    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use crate::storage::Storage;
 
@@ -13,13 +13,14 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
     let alloy_log = AlloyLog::from(log.clone());
 
     match event_name {
-        "GasBalanceDeducted" => {
+        "GasBalanceDeducted" | "PaidGasInTokens" => {
+            // Store this log to be paired with the next UserOperationEvent
             *previous_log = Some(log.clone());
         }
         "UserOperationEvent" => {
             if let Some(prev_log) = previous_log.take() {
-                let gas_balance_deducted_log = AlloyLog::from(prev_log.clone());
-                if let Ok(event) = GasBalanceDeducted::decode_log(&gas_balance_deducted_log, true) {
+                let prev_log = AlloyLog::from(prev_log.clone());
+                if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
                     println!(
                         "✅ Decoded GasBalanceDeducted:\n\
                         - user: {:?}\n\
@@ -29,6 +30,18 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         event.user, event.amount, event.premium, event.mode
                     );
                     storage.store(&event, "GasBalanceDeducted").await;
+                }
+                if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
+                    println!(
+                        "✅ Decoded PaidGasInTokens:\n\
+                        - user: {:?}\n\
+                        - token: {}\n\
+                        - tokenCharge : {}\n\
+                        - appliedMarkup: {}\n\
+                        - exchangeRate: {}",
+                        event.user, event.token, event.tokenCharge, event.appliedMarkup, event.exchangeRate
+                    );
+                    storage.store(&event, "PaidGasInTokens").await;
                 }
                 let user_op_log = AlloyLog::from(log.clone());
                 println!("✅ Matched UserOperationEvent for previous event");

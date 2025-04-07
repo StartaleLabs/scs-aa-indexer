@@ -11,11 +11,18 @@ active= true
 
 [[chains.minato.contracts]]
 name = "Sponsership_Paymaster"
-address = "0xb28E459aB4a61e78b27768A37C92d902CA89F181"
+address = "0x20E8677aCB27BC0dC3BCA61f981324560cB77066"
 events = [
     { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
     { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
     { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
+]
+
+[[chains.minato.contracts]]
+name = "Token Paymaster"
+address = "0xcEf7da45a09B17D77e33FC32e5D24Ef1D30B68E3"
+events = [
+    { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
 ]
 
 [[chains.minato.contracts]]
@@ -29,6 +36,6 @@ events = [
 # Import storage urls and topics from .env file
 use_redis = true
 redis_url = ""
-use_kafka = false
+use_kafka = true
 kafka_broker = ""
 kafka_topics = [""]

@@ -1,6 +1,6 @@
 pub mod kafka;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[async_trait]
 pub trait Storage {

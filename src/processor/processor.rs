@@ -1,5 +1,4 @@
 
-use alloy::serde::storage;
 use tokio::sync::mpsc;
 use alloy::{
     rpc::types::Log as RpcLog,

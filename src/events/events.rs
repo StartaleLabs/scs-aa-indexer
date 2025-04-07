@@ -12,6 +12,9 @@ sol! {
     #[derive(Debug, Serialize)] 
     event RefundProcessed(address indexed user, uint256 amount);
 
+    #[derive(Debug, Serialize)]
+    event PaidGasInTokens(address indexed user, address indexed token, uint256 tokenCharge, uint48 appliedMarkup, uint256 exchangeRate);
+
     #[derive(Debug, Serialize)] 
     event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed);
 }
