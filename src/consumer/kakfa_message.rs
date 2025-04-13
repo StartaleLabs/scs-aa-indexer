@@ -11,4 +11,5 @@ pub struct UserOpMessage {
     pub timestamp: String,
     pub user_op: serde_json::Value,
     pub meta_data: Option<serde_json::Value>,
+    pub user_op_hash: String,
 }

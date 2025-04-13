@@ -5,7 +5,7 @@ indexer_name = "SCS AA Event Indexer"
 # Import RPC url from .env file
 rpc_url = ""
 chain_id= 1946
-block_time= 2
+block_time= 5
 polling_blocks= 5 
 active= true
 

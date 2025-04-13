@@ -51,6 +51,9 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                     println!("✅ Matched UserOperationEvent for previous event");
     
                     if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
+                        meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
+                        meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
+                        
                         let msg = UserOpMessage {
                             project_id: Some(String::new()),
                             policy_id: Some(String::new()),
@@ -61,15 +64,13 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                             } else {
                                 "FAILED".to_string()
                             },
+                            user_op_hash: format!("{:?}", event.userOpHash),
                             data_source: "EntryPoint".to_string(),
                             timestamp: Utc::now().to_rfc3339(),
                             user_op: json!({
-                                "userOpHash": format!("{:?}", event.userOpHash),
                                 "sender": format!("{:?}", event.sender),
                                 "paymaster": format!("{:?}", event.paymaster),
                                 "nonce": event.nonce.to_string(),
-                                "actualGasCost": event.actualGasCost.to_string(),
-                                "actualGasUsed": event.actualGasUsed.to_string()
                             }),
                             meta_data: Some(json!(meta)),
                         };
