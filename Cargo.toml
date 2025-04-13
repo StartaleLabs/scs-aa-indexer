@@ -10,7 +10,7 @@ serde = { version = "1.0", features = ["derive"] }  # Serialization
 dotenv = "0.15" # Environment variables
 log = "0.4" # Logging
 env_logger = "0.10" # Logger initialization
-sqlx = { version = "0.7", features = ["postgres", "runtime-tokio"] } # Database
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "json", "chrono"] } # Database
 redis = "0.23" # Redis for caching
 opensearch = "2.3.0" # OpenSearch indexing
 warp = "0.3" # Web API (REST/GraphQL)
@@ -26,8 +26,10 @@ url = "2.3"
 hex-literal = "0.3"
 alloy-sol-types = "0.8.22"
 derive_more = { version = "1.0.0", features = ["display"] }
-rdkafka = "0.37.0"
+rdkafka = {version ="0.37.0", features = ["tokio"]}
 serde_json = "1.0.139"
+anyhow = "1.0.97"
+chrono = "0.4.40"
 
 [dev-dependencies]
 tokio-test = "0.4"

@@ -7,6 +7,7 @@ use alloy::{
 
 
 use std::collections::HashMap;
+use std::sync::Arc;
 use alloy::hex;
 use crate::{
     config::config::Config, 
@@ -16,12 +17,12 @@ use crate::storage::Storage;
 
 pub struct ProcessEvent<S: Storage> {
     event_map: HashMap<B256, (String, Vec<String>)>,
-    storage: S,
+    storage: Arc<S>,
 }
 
 impl<S: Storage> ProcessEvent<S> {
     // **Initialize Processor with Dynamic Event Mapping**
-    pub fn new(config: &Config, storage: S) -> Self {
+    pub fn new(config: &Config, storage: Arc<S>) -> Self {
         let mut event_map = HashMap::new();
 
         // 🔹 Iterate over all chains & their contracts
@@ -46,7 +47,7 @@ impl<S: Storage> ProcessEvent<S> {
             if let Some(event_signature) = log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
                     println!("✅ Processing Event: {}", event_name);
-                    process_event(event_name, &log, &mut previous_log, &self.storage).await;
+                    process_event(event_name, &log, &mut previous_log, Arc::clone(&self.storage)).await;
                 } else {
                     println!("⚠️ Unknown event signature: {:?}", event_signature);
                 }

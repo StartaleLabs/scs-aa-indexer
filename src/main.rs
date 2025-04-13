@@ -1,15 +1,18 @@
+use consumer::kafka_consumer::start_kafka_consumer;
+use storage::time_scale::TimescaleStorage;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
+use std::sync::Arc;
 
 mod config;
 mod listener;
 mod processor;
 mod storage;
+mod consumer;
 
 use crate::listener::listener::EventListener;
 use crate::processor::processor::ProcessEvent;
 use crate::config::config::Config;
-use crate::storage::kafka::KafkaStorage;
 #[tokio::main]
 async fn main() {
     let config = Config::load();
@@ -17,35 +20,51 @@ async fn main() {
 
     let (log_sender, log_receiver) = mpsc::channel(100);
 
-    let kafka = KafkaStorage::new(&config.storage.kafka_broker, &config.storage.kafka_topics[0]);
+    let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
+    let kafka_storage = Arc::clone(&db);
+    let indexer_storage = Arc::clone(&db);
 
-    let event_processor = ProcessEvent::new(&config, kafka);
-    let chains = config.chains.clone();
-    for (chain_name, chain) in chains {
+    let kafka_group_id = config.storage.kafka_group_id.clone();
+    let kafka_broker = config.storage.kafka_broker.clone();
+    let kafka_topics = config.storage.kafka_topics.clone();
+
+    /*
+    Start Kafka consumer
+    */
+    start_kafka_consumer(
+        &kafka_broker,
+        &kafka_topics[0],
+        &kafka_group_id,
+        kafka_storage,
+    );
+
+    // Start onchain event polling per chain
+    for (chain_name, chain) in config.chains.clone() {
         if chain.active {
-            let rpc_url = &chain.rpc_url;
+            let rpc_url = chain.rpc_url.clone();
             let poll_interval = chain.block_time * chain.polling_blocks;
-            let event_listener = EventListener::new(rpc_url).await;
+            let log_sender = log_sender.clone();
+            let chain_clone = chain.clone();
 
-            tokio::spawn({
-                let log_sender = log_sender.clone();
-                let chain = chain.clone();
+            tokio::spawn(async move {
+                let event_listener = EventListener::new(&rpc_url).await;
 
-                async move {
-                    loop {
-                        println!("🔍 Listening for events on {}...", chain_name);
-                        event_listener.listen_events(&chain, log_sender.clone()).await;
-                        sleep(Duration::from_secs(poll_interval)).await;
-                    }
+                loop {
+                    println!("🔍 Listening for events on {}...", chain_name);
+                    event_listener.listen_events(&chain_clone, log_sender.clone()).await;
+                    sleep(Duration::from_secs(poll_interval)).await;
                 }
             });
         }
     }
 
+    // Start log processor
     tokio::spawn(async move {
+        let event_processor = ProcessEvent::new(&config, indexer_storage);
         event_processor.process(log_receiver).await;
     });
 
+    // Keep alive
     loop {
         sleep(Duration::from_secs(3600)).await;
     }

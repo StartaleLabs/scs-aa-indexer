@@ -34,8 +34,9 @@ events = [
 
 [storage]
 # Import storage urls and topics from .env file
-use_redis = true
-redis_url = ""
+use_timescale = true
 use_kafka = true
 kafka_broker = ""
 kafka_topics = [""]
+kafka_group_id = "userop"
+timescale_db_url= ""
