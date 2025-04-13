@@ -53,7 +53,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                     if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
                         meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
                         meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
-                        
+
                         let msg = UserOpMessage {
                             project_id: Some(String::new()),
                             policy_id: Some(String::new()),
@@ -74,7 +74,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                             }),
                             meta_data: Some(json!(meta)),
                         };
-    
+                        println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
                         storage.upsert_user_op_message(msg).await.ok();
                     }
                 } else {

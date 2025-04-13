@@ -26,10 +26,8 @@ impl Storage for TimescaleStorage {
     async fn upsert_user_op_message(&self, msg: UserOpMessage) -> Result<(), Error> {
         let user_op_hash = &msg.user_op_hash;
         let created_at = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
-    
         println!("🟢 Upserting UserOpMessage with hash: {}", user_op_hash);
         println!("useropmessage: {}", serde_json::to_string(&msg).unwrap());
-
 
         // check if the record exists
         let existing: Option<(i64,)> = sqlx::query_as("SELECT id FROM pm_user_operations WHERE user_op_hash = $1")
@@ -66,7 +64,6 @@ impl Storage for TimescaleStorage {
             .execute(&self.pool)
             .await?;
         }
-
         Ok(())
     }
 }

@@ -20,6 +20,7 @@ pub fn start_kafka_consumer<S: Storage + Send + Sync + 'static>(
         .set("bootstrap.servers", brokers)
         .set("auto.offset.reset", "earliest")
         .set("enable.partition.eof", "false")
+        .set("debug", "all")
         .create()
         .expect("Failed to create Kafka consumer");
 

@@ -40,9 +40,6 @@ pub struct EventConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct StorageConfig {
-    pub use_timescale: bool,
-    pub use_kafka: bool,
-
     pub kafka_broker: String,
     pub kafka_topics: Vec<String>,
     pub kafka_group_id: String,
@@ -73,7 +70,7 @@ impl Config {
         if let Ok(timescale_db_url) = env::var("TIMESCALE_DB_URL") {
             config.storage.timescale_db_url = timescale_db_url;
         }
-        
+
         if let Ok(kafka_broker) = env::var("KAFKA_BROKER") {
             config.storage.kafka_broker = kafka_broker;
         }
