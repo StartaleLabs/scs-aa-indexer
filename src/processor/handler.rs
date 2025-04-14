@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use alloy_sol_types::SolEvent;
 use alloy::{
-    primitives::{Address, Log as AlloyLog, B256, U256},
+    primitives::Log as AlloyLog,
     rpc::types::Log as RpcLog,
 };
 use chrono::Utc;
 use scs_aa_indexer::events::events::{
-    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens, CombinedUserOpEvent
+    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
 use crate::{consumer::kakfa_message::UserOpMessage, storage::Storage};
@@ -65,7 +65,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                                 "FAILED".to_string()
                             },
                             user_op_hash: format!("{:?}", event.userOpHash),
-                            data_source: "EntryPoint".to_string(),
+                            data_source: "INDEXER".to_string(),
                             timestamp: Utc::now().to_rfc3339(),
                             user_op: json!({
                                 "sender": format!("{:?}", event.sender),

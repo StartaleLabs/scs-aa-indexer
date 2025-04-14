@@ -16,8 +16,6 @@ use crate::config::config::Config;
 #[tokio::main]
 async fn main() {
     let config = Config::load();
-    println!("Loaded configuration: {:?}", &config);
-
     let (log_sender, log_receiver) = mpsc::channel(100);
 
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
