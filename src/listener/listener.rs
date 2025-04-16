@@ -47,6 +47,7 @@ impl EventListener {
         // **Extract Events from Contracts**
         let mut event_signatures: Vec<B256> = Vec::new();
         for contract in &chain_config.contracts {
+            println!("-- Listening to Contract: {} on chainId: {}", contract.name, chain_config.chain_id);
             for event in &contract.events {
                 event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
             }

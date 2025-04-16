@@ -1,8 +1,6 @@
 use alloy::sol;
 use serde::Serialize;
 
-use alloy::primitives::{aliases::U48, Address, B256, U256};
-
 // ✅ Define Solidity Events
 sol! {
     // Events for User Sponsored and Gas Refunded from Paymaster

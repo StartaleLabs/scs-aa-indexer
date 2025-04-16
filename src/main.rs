@@ -16,6 +16,7 @@ use crate::config::config::Config;
 #[tokio::main]
 async fn main() {
     let config = Config::load();
+    println!("🔧 Configuration loaded, starting indexer: {:?}", &config.general.indexer_name);
     let (log_sender, log_receiver) = mpsc::channel(100);
 
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
@@ -25,6 +26,7 @@ async fn main() {
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
     let kafka_topics = config.storage.kafka_topics.clone();
+
 
     /*
     Start Kafka consumer

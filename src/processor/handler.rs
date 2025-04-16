@@ -22,64 +22,63 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
             *previous_log = Some(log.clone());
         }
         "UserOperationEvent" => {
+            if let Some(prev_log) = previous_log.take() {
+                let prev_log = AlloyLog::from(prev_log.clone());
 
-                if let Some(prev_log) = previous_log.take() {
-                    let prev_log = AlloyLog::from(prev_log.clone());
-    
-                    let mut meta = serde_json::Map::new();
-                    let mut paymaster_type = "UNKNOWN".to_string();
-                    let mut token_address = String::new();
-    
-                    if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
-                        meta.insert("deductedUser".to_string(), json!(event.user));
-                        meta.insert("deductedAmount".to_string(), json!(event.amount));
-                        meta.insert("premium".to_string(), json!(event.premium));
-                        paymaster_type = "SPONSORSHIP".to_string();
-                    }
-    
-                    if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
-                        meta.insert("deductedUser".to_string(), json!(event.user));
-                        meta.insert("token".to_string(), json!(event.token));
-                        meta.insert("tokenCharge".to_string(), json!(event.tokenCharge));
-                        meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup));
-                        meta.insert("exchangeRate".to_string(), json!(event.exchangeRate));
-                        paymaster_type = "TOKEN".to_string();
-                        token_address = format!("{:?}", event.token);
-                    }
-    
-                    let user_op_log = AlloyLog::from(log.clone());
-                    println!("✅ Matched UserOperationEvent for previous event");
-    
-                    if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
-                        meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
-                        meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
+                let mut meta = serde_json::Map::new();
+                let mut paymaster_type = "UNKNOWN".to_string();
+                let mut token_address = String::new();
 
-                        let msg = UserOpMessage {
-                            project_id: Some(String::new()),
-                            policy_id: Some(String::new()),
-                            paymaster_mode: paymaster_type,
-                            token_address: Some(token_address),
-                            status: if event.success {
-                                "SUCCESS".to_string()
-                            } else {
-                                "FAILED".to_string()
-                            },
-                            user_op_hash: format!("{:?}", event.userOpHash),
-                            data_source: "INDEXER".to_string(),
-                            timestamp: Utc::now().to_rfc3339(),
-                            user_op: json!({
-                                "sender": format!("{:?}", event.sender),
-                                "paymaster": format!("{:?}", event.paymaster),
-                                "nonce": event.nonce.to_string(),
-                            }),
-                            meta_data: Some(json!(meta)),
-                        };
-                        println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
-                        storage.upsert_user_op_message(msg).await.ok();
-                    }
-                } else {
-                    println!("⚠️ UserOperationEvent found but no previous log matched.");
+                if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
+                    meta.insert("deductedUser".to_string(), json!(event.user));
+                    meta.insert("deductedAmount".to_string(), json!(event.amount));
+                    meta.insert("premium".to_string(), json!(event.premium));
+                    paymaster_type = "SPONSORSHIP".to_string();
                 }
+
+                if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
+                    meta.insert("deductedUser".to_string(), json!(event.user));
+                    meta.insert("token".to_string(), json!(event.token));
+                    meta.insert("tokenCharge".to_string(), json!(event.tokenCharge));
+                    meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup));
+                    meta.insert("exchangeRate".to_string(), json!(event.exchangeRate));
+                    paymaster_type = "TOKEN".to_string();
+                    token_address = format!("{:?}", event.token);
+                }
+
+                let user_op_log = AlloyLog::from(log.clone());
+                println!("✅ Matched UserOperationEvent for previous event");
+
+                if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
+                    meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
+                    meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
+
+                    let msg = UserOpMessage {
+                        project_id: Some(String::new()),
+                        policy_id: Some(String::new()),
+                        paymaster_mode: Some(paymaster_type),
+                        token_address: Some(token_address),
+                        status: if event.success {
+                            "Success".to_string()
+                        } else {
+                            "Failed".to_string()
+                        },
+                        user_op_hash: format!("{:?}", event.userOpHash),
+                        data_source: Some("Indexer".to_string()),
+                        timestamp: Utc::now().to_rfc3339(),
+                        user_op: json!({
+                            "sender": format!("{:?}", event.sender),
+                            "paymaster": format!("{:?}", event.paymaster),
+                            "nonce": event.nonce.to_string(),
+                        }),
+                        meta_data: Some(json!(meta)),
+                    };
+                    println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
+                    storage.upsert_user_op_message(msg).await.ok();
+                }
+            } else {
+                println!("⚠️ UserOperationEvent found but no previous log matched.");
+            }
         }
         "UserOperationSponsored" => {
             if let Ok(event) = UserOperationSponsored::decode_log(&alloy_log, true) {
