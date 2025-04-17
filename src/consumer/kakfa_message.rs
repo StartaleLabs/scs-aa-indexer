@@ -1,3 +1,4 @@
+use derive_more::derive::Display;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -7,7 +8,7 @@ pub struct UserOpMessage {
     pub paymaster_mode: Option<String>,
     pub policy_id: Option<String>,
     pub token_address: Option<String>,
-    pub status: String,
+    pub status: Status,
     pub data_source: Option<String>,
     pub timestamp: String,
     pub user_op: serde_json::Value,
@@ -15,6 +16,36 @@ pub struct UserOpMessage {
 
     #[serde(deserialize_with = "deserialize_lowercase")]
     pub user_op_hash: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Display)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum Status {
+    Failed,
+    Success,
+    Eligible,
+    #[serde(other)]
+    Unknown,
+}
+
+impl Status {
+    pub fn from_str_case_insensitive(s: &str) -> Self {
+        match s.to_uppercase().as_str() {
+            "FAILED" => Status::Failed,
+            "SUCCESS" => Status::Success,
+            "ELIGIBLE" => Status::Eligible,
+            _ => Status::Unknown,
+        }
+    }
+
+    pub fn priority(&self) -> i32 {
+        match self {
+            Status::Failed => 3,
+            Status::Success => 2,
+            Status::Eligible => 1,
+            Status::Unknown => 0,
+        }
+    }
 }
 
 fn deserialize_lowercase<'de, D>(deserializer: D) -> Result<String, D::Error>

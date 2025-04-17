@@ -4,8 +4,7 @@ use anyhow::Error;
 use async_trait::async_trait;
 use sqlx::PgPool;
 use sqlx::types::Json;
-
-use crate::{consumer::kakfa_message::UserOpMessage, storage::Storage};
+use crate::{consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage};
 use chrono::{DateTime, Utc};
 
 
@@ -25,6 +24,7 @@ impl Storage for TimescaleStorage {
     async fn upsert_user_op_message(&self, msg: UserOpMessage) -> Result<(), Error> {
         let user_op_hash = msg.user_op_hash.trim();
         let created_at = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
+        let status_str = msg.status.to_string();
 
         println!("🟢 Upserting UserOpMessage with hash: {}", &user_op_hash);
         println!("- useropmessage: {}", serde_json::to_string(&msg).unwrap());
@@ -37,10 +37,12 @@ impl Storage for TimescaleStorage {
         .await?;
 
         if let Some((id, current_status)) = existing {
-            let incoming_priority = status_priority(&msg.status);
-            let existing_priority = status_priority(&current_status);
+            let current_status = Status::from_str_case_insensitive(&current_status);
+            let incoming_status = msg.status;
+            
+            let incoming_priority = incoming_status.priority();
+            let existing_priority = current_status.priority();
             println!("➡️ incoming_priority: {}, existing_priority: {}", incoming_priority, existing_priority);
-
             if incoming_priority > existing_priority {
                 // Update status + metadata if higher priority
                 let query = if let Some(ref meta) = msg.meta_data {
@@ -50,7 +52,7 @@ impl Storage for TimescaleStorage {
                              metadata = metadata || $4::jsonb, updated_at = now()
                          WHERE id = $5"
                     )
-                    .bind(&msg.status)
+                    .bind(&status_str)
                     .bind(&msg.paymaster_mode)
                     .bind(&msg.data_source)
                     .bind(Json(meta))
@@ -62,14 +64,14 @@ impl Storage for TimescaleStorage {
                              updated_at = now() 
                          WHERE id = $4"
                     )
-                    .bind(&msg.status)
+                    .bind(&status_str)
                     .bind(&msg.paymaster_mode)
                     .bind(&msg.data_source)
                     .bind(id)
                 };
 
                 match query.execute(&self.pool).await {
-                    Ok(res) if res.rows_affected() > 0 => println!("✅ Updated record with higher priority status ({})", msg.status),
+                    Ok(res) if res.rows_affected() > 0 => println!("✅ Updated record with higher priority status ({})", status_str),
                     Ok(_) => println!("⚠️ No rows updated despite higher priority."),
                     Err(e) => eprintln!("❌ Failed to update record: {:?}", e),
                 }
@@ -105,7 +107,7 @@ impl Storage for TimescaleStorage {
             .bind(&msg.project_id)
             .bind(&msg.paymaster_mode)
             .bind(&msg.data_source)
-            .bind(&msg.status)
+            .bind(&status_str)
             .bind(&msg.token_address)
             .bind(Json(msg.meta_data.as_ref().unwrap_or(&serde_json::json!({}))))
             .bind(created_at)
@@ -121,11 +123,3 @@ impl Storage for TimescaleStorage {
     }
 }
 
-fn status_priority<S: AsRef<str>>(status: S) -> i32 {
-    match status.as_ref().to_uppercase().as_str() {
-        "FAILED" => 3,
-        "SUCCESS" => 2,
-        "Eligible" => 1,
-        _ => 0,
-    }
-}

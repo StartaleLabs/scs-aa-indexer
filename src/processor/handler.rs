@@ -10,7 +10,7 @@ use scs_aa_indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{consumer::kakfa_message::UserOpMessage, storage::Storage};
+use crate::{consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage};
 
 // **Process a log based on the event name**
 pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, storage: Arc<S>) {
@@ -59,9 +59,9 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         paymaster_mode: Some(paymaster_type),
                         token_address: Some(token_address),
                         status: if event.success {
-                            "Success".to_string()
+                            Status::Success
                         } else {
-                            "Failed".to_string()
+                            Status::Failed
                         },
                         user_op_hash: format!("{:?}", event.userOpHash),
                         data_source: Some("Indexer".to_string()),
