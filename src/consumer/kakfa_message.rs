@@ -19,7 +19,6 @@ pub struct UserOpMessage {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Display)]
-#[serde(rename_all = "UPPERCASE")]
 pub enum Status {
     Failed,
     Success,
