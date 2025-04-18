@@ -40,10 +40,10 @@ pub struct EventConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct StorageConfig {
-    pub use_redis: bool,
-    pub redis_url: String,
     pub kafka_broker: String,
     pub kafka_topics: Vec<String>,
+    pub kafka_group_id: String,
+    pub timescale_db_url: String,
 }
 
 impl Config {
@@ -67,14 +67,18 @@ impl Config {
         }
 
         // 🔹 **Override Storage Configuration Dynamically ENV**
-        if let Ok(redis_url) = env::var("REDIS_URL") {
-            config.storage.redis_url = redis_url;
+        if let Ok(timescale_db_url) = env::var("TIMESCALE_DB_URL") {
+            config.storage.timescale_db_url = timescale_db_url;
         }
+
         if let Ok(kafka_broker) = env::var("KAFKA_BROKER") {
             config.storage.kafka_broker = kafka_broker;
         }
         if let Ok(kafka_topics) = env::var("KAFKA_TOPICS") {
             config.storage.kafka_topics = kafka_topics.split(',').map(String::from).collect();
+        }
+        if let Ok(kafka_group_id) = env::var("KAFKA_GROUP_ID") {
+            config.storage.kafka_group_id = kafka_group_id;
         }
 
         config
