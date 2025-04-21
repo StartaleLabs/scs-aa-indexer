@@ -17,6 +17,8 @@ pub async fn get_user_op(
     .fetch_one(&db)
     .await;
 
+    println!("🔍 Query result: {:?}", query_result);
+    
     match query_result {
         Ok(record) => {
             println!("✅ Found record for hash: {}", user_op_hash);
