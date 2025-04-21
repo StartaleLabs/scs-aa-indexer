@@ -1,0 +1,12 @@
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/libspki-3b6cad98c1f2beb9.rmeta: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/algorithm.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/error.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/spki.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/traits.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/../README.md
+
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/libspki-3b6cad98c1f2beb9.rlib: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/algorithm.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/error.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/spki.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/traits.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/../README.md
+
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/spki-3b6cad98c1f2beb9.d: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/algorithm.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/error.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/spki.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/traits.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/../README.md
+
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/lib.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/algorithm.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/error.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/spki.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/traits.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spki-0.7.3/src/../README.md:

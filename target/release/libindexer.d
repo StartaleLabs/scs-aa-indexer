@@ -1,0 +1,1 @@
+/app/target/release/libindexer.rlib: /app/indexer/src/consumer/kafka_consumer.rs /app/indexer/src/consumer/kakfa_message.rs /app/indexer/src/consumer/mod.rs /app/indexer/src/events/events.rs /app/indexer/src/events/mod.rs /app/indexer/src/lib.rs /app/indexer/src/storage/mod.rs /app/indexer/src/storage/time_scale.rs

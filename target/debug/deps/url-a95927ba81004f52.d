@@ -1,0 +1,11 @@
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/liburl-a95927ba81004f52.rmeta: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/host.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/origin.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/parser.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/path_segments.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/slicing.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/quirks.rs
+
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/url-a95927ba81004f52.d: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/host.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/origin.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/parser.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/path_segments.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/slicing.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/quirks.rs
+
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/lib.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/host.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/origin.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/parser.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/path_segments.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/slicing.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/url-2.5.4/src/quirks.rs:

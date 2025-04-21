@@ -1,0 +1,1 @@
+fn(axum::extract::Path<std::string::String>, State<Pool<Postgres>>) -> impl Future<Output = Result<axum::Json<UserOperationRecord>, StatusCode>> {get_user_op}

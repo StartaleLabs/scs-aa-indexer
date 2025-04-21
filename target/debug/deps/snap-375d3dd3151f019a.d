@@ -1,0 +1,20 @@
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/libsnap-375d3dd3151f019a.rmeta: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/bytes.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/compress.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32_table.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/decompress.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/error.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/frame.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/raw.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/read.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/tag.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/write.rs /Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/crc32_table.rs /Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/tag.rs
+
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/snap-375d3dd3151f019a.d: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/bytes.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/compress.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32_table.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/decompress.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/error.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/frame.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/raw.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/read.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/tag.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/write.rs /Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/crc32_table.rs /Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/tag.rs
+
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/lib.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/bytes.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/compress.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/crc32_table.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/decompress.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/error.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/frame.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/raw.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/read.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/tag.rs:
+/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snap-1.1.1/src/write.rs:
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/crc32_table.rs:
+/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out/tag.rs:
+
+# env-dep:OUT_DIR=/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/build/snap-f271187f56fb925e/out

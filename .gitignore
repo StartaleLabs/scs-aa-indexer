@@ -1,4 +1,4 @@
-/target
+indexer/target
 .env
-.DS_Store
-src/.DS_Store
+indexer/.DS_Store
+indexer/src/.DS_Store
