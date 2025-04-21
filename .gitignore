@@ -2,3 +2,4 @@ indexer/target
 .env
 indexer/.DS_Store
 indexer/src/.DS_Store
+target

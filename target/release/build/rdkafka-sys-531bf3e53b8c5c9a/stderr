@@ -1,3 +1,0 @@
-Building and linking librdkafka statically
-Running command: "/app/target/release/build/rdkafka-sys-531bf3e53b8c5c9a/out/configure --disable-ssl --disable-gssapi --disable-curl --disable-zstd --disable-lz4-ext" in dir: /app/target/release/build/rdkafka-sys-531bf3e53b8c5c9a/out
-Running command: "make libs" in dir: /app/target/release/build/rdkafka-sys-531bf3e53b8c5c9a/out

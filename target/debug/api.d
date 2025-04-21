@@ -1,1 +1,0 @@
-/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/api: /Users/nish/Documents/Startale/scs-aa-indexer/api/src/db/mod.rs /Users/nish/Documents/Startale/scs-aa-indexer/api/src/main.rs /Users/nish/Documents/Startale/scs-aa-indexer/api/src/models/mod.rs /Users/nish/Documents/Startale/scs-aa-indexer/api/src/routes/mod.rs

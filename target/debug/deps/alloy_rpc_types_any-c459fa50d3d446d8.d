@@ -1,9 +1,0 @@
-/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/liballoy_rpc_types_any-c459fa50d3d446d8.rmeta: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/mod.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/receipt.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/block.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/../README.md
-
-/Users/nish/Documents/Startale/scs-aa-indexer/target/debug/deps/alloy_rpc_types_any-c459fa50d3d446d8.d: /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/lib.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/mod.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/receipt.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/block.rs /Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/../README.md
-
-/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/lib.rs:
-/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/mod.rs:
-/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/transaction/receipt.rs:
-/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/block.rs:
-/Users/nish/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rpc-types-any-0.11.1/src/../README.md:
