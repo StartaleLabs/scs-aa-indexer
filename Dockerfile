@@ -1,32 +1,46 @@
 # syntax=docker/dockerfile:1
 
-FROM rust:1.86.0-alpine AS builder
+FROM rust:1.86.0-bookworm AS builder
 
 # Install dependencies
-RUN apk add --no-cache pkgconfig clang lld musl-dev git openssl-dev cmake clang bash python3
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    build-essential \
+    librdkafka-dev \
+    libssl-dev \
+    zlib1g-dev \
+    ca-certificates \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working dir
 WORKDIR /app
-
 COPY . .
 
 ARG SERVICE
 RUN cargo build --release --bin ${SERVICE}
 
-# ===
+# === Runtime ===
 
-FROM alpine:latest
+FROM debian:bookworm
 LABEL maintainer="developer@startale.com"
 WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 \
+    librdkafka1 \
+    zlib1g \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG SERVICE
 COPY --from=builder /app/target/release/${SERVICE} /app/bin/service
 
-RUN chmod +x /app/bin/service
-
-RUN addgroup -g 10000 docker && \
-    adduser -u 10000 -G docker -D -s /bin/sh -h /app docker && \
-    chown docker:docker -R /app
+RUN chmod +x /app/bin/service && \
+    groupadd -g 10000 docker && \
+    useradd -u 10000 -g docker -d /app -s /bin/sh docker && \
+    chown -R docker:docker /app
 
 USER docker
 
