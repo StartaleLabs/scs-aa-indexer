@@ -45,8 +45,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args:
-            - SERVICE=indexer
+          build-args: |
+            SERVICE=indexer
 
       # API image
       - name: Docker meta
@@ -69,5 +69,5 @@ jobs:
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
-          build-args:
-            - SERVICE=api
+          build-args: |
+            SERVICE=api
