@@ -3,7 +3,7 @@ name: docker
 on:
   push:
     branches:
-      - main
+      - master
     tags:
       - v*
 
@@ -24,6 +24,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Indexer image
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -44,3 +45,29 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args:
+            - SERVICE=indexer
+
+      # API image
+      - name: Docker meta
+        id: meta-api
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.REPO_NAME }}/${{ github.event.repository.name }}-api
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=sha
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          build-args:
+            - SERVICE=api
