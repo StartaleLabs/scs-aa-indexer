@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 
-FROM rust:1.86.0-slim AS builder
+FROM rust:1.86.0-alpine AS builder
 
 # Install dependencies
-RUN apt-get update && apt-get install -y pkg-config libssl-dev cmake clang curl
+RUN apk add --no-cache clang lld musl-dev git
+# RUN apt-get update && apt-get install -y pkg-config libssl-dev cmake clang curl musl musl-dev musl-tools
 
 # Set working dir
 WORKDIR /app
@@ -20,11 +21,14 @@ LABEL maintainer="developer@startale.com"
 WORKDIR /app
 
 ARG SERVICE
-COPY --from=builder /app/target/release/${SERVICE} /app/bin/${SERVICE}
+COPY --from=builder /app/target/release/${SERVICE} /app/bin/service
 
-RUN adduser -D -u 1000 docker
-RUN chmod +x /app/bin/${SERVICE} && \
-    chown -R docker:docker /app
+RUN chmod +x /app/bin/service
+
+RUN addgroup -g 10000 docker && \
+    adduser -u 10000 -G docker -D -s /bin/sh -h /app docker && \
+    chown docker:docker -R /app
 
 USER docker
-CMD ["/app/bin/${SERVICE}"]
+
+CMD ["/app/bin/service"]
