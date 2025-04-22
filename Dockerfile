@@ -3,7 +3,7 @@
 FROM rust:1.86.0-alpine AS builder
 
 # Install dependencies
-RUN apk add --no-cache pkgconfig clang lld musl-dev git openssl-dev cmake clang
+RUN apk add --no-cache pkgconfig clang lld musl-dev git openssl-dev cmake clang bash
 
 # Set working dir
 WORKDIR /app
