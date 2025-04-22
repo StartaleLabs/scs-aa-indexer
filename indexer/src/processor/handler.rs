@@ -6,7 +6,7 @@ use alloy::{
     rpc::types::Log as RpcLog,
 };
 use chrono::Utc;
-use scs_aa_indexer::events::events::{
+use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;

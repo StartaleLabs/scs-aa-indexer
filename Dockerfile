@@ -1,22 +1,30 @@
-# Use official Rust image
-FROM rust:1.84.0
+# syntax=docker/dockerfile:1
+
+FROM rust:1.86.0-slim AS builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y pkg-config libssl-dev cmake clang curl
 
-# Create app directory
+# Set working dir
 WORKDIR /app
 
-# Copy Cargo.toml and Cargo.lock first (for caching builds)
-COPY Cargo.toml Cargo.lock ./
-
-# Build dependencies early to cache
-RUN mkdir src && echo 'fn main() {}' > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
-
-# Copy the source
 COPY . .
 
-# Then run your app
-CMD ["cargo", "run", "--release"]
+ARG SERVICE
+RUN cargo build --release --bin ${SERVICE}
+
+# ===
+
+FROM alpine:latest
+LABEL maintainer="developer@startale.com"
+WORKDIR /app
+
+ARG SERVICE
+COPY --from=builder /app/target/release/${SERVICE} /app/bin/${SERVICE}
+
+RUN adduser -D -u 1000 docker
+RUN chmod +x /app/bin/${SERVICE} && \
+    chown -R docker:docker /app
+
+USER docker
+CMD ["/app/bin/${SERVICE}"]

@@ -51,7 +51,7 @@ impl Config {
         dotenv().ok();
         
         // 🔹 **Load Configuration from config.toml file**
-        let config_contents = fs::read_to_string("config/config.toml")
+        let config_contents = fs::read_to_string("indexer/config/config.toml")
             .expect("Failed to read config file");
 
 

@@ -3,6 +3,7 @@ version: '3.8'
 networks:
   scs-shared-network:
     external: true
+
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg15
@@ -16,17 +17,20 @@ services:
       POSTGRES_DB: timescaledb
     ports:
       - "5433:5432"
-      
+
   indexer:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: indexer
     container_name: scs-aa-indexer
     depends_on:
       - timescaledb
     networks:
       - scs-shared-network
     environment:
+      SERVICE: indexer
       MINATO_RPC_URL: https://rpc.minato.soneium.org
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPICS: userops
@@ -35,4 +39,25 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: ["cargo", "run", "--release"]
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: api
+    container_name: scs-aa-api
+    depends_on:
+      - timescaledb
+    networks:
+      - scs-shared-network
+    environment:
+      SERVICE: api
+      TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
+      API_HOST: 0.0.0.0
+      API_PORT: 8081
+    ports:
+      - "8081:8081"
+    working_dir: /app
+    volumes:
+      - .:/app
