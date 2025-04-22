@@ -22,6 +22,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: indexer
     container_name: scs-aa-indexer
     depends_on:
       - timescaledb
@@ -42,6 +44,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: api
     container_name: scs-aa-api
     depends_on:
       - timescaledb
