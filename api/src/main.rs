@@ -3,7 +3,7 @@ use std::env;
 use axum::{Router, routing::get};
 use dotenv::dotenv;
 use tracing_subscriber;
-use crate::routes::get_user_op;
+use crate::routes::{get_user_op, health_check};
 use tokio::net::TcpListener;
 
 mod db;
@@ -19,6 +19,7 @@ async fn main() {
 
     let app = Router::new()
     .route("/user_op/:hash", get(get_user_op))
+    .route("/health", get(health_check))
     .with_state(db);
 
     // 👇 Read from environment variables

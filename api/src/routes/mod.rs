@@ -18,7 +18,7 @@ pub async fn get_user_op(
     .await;
 
     println!("🔍 Query result: {:?}", query_result);
-    
+
     match query_result {
         Ok(record) => {
             println!("✅ Found record for hash: {}", user_op_hash);
@@ -33,4 +33,8 @@ pub async fn get_user_op(
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+pub async fn health_check() -> (StatusCode, Json<&'static str>) {
+    (StatusCode::OK, Json("OK"))
 }
