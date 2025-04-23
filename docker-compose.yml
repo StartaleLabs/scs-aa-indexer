@@ -36,6 +36,7 @@ services:
       KAFKA_TOPICS: userops
       KAFKA_GROUP_ID: scs-aa-indexer-dev
       TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
+      CONFIG_PATH: indexer/config/config.toml
     volumes:
       - .:/app
     working_dir: /app

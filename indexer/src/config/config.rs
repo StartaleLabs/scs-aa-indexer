@@ -49,11 +49,13 @@ pub struct StorageConfig {
 impl Config {
     pub fn load() -> Self {
         dotenv().ok();
-        
+        let mut config = String::new();
+        if let Ok(config_path) = env::var("CONFIG_PATH") {
+            config = config_path;
+        }
         // 🔹 **Load Configuration from config.toml file**
-        let config_contents = fs::read_to_string("indexer/config/config.toml")
+        let config_contents = fs::read_to_string(config)
             .expect("Failed to read config file");
-
 
         let mut config: Config =
             toml::from_str(&config_contents).expect("Failed to parse config file");
@@ -80,7 +82,7 @@ impl Config {
         if let Ok(kafka_group_id) = env::var("KAFKA_GROUP_ID") {
             config.storage.kafka_group_id = kafka_group_id;
         }
-
+        
         config
 
     }
