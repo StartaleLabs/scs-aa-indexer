@@ -35,7 +35,7 @@ services:
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPICS: userops
       KAFKA_GROUP_ID: scs-aa-indexer-dev
-      TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
+      TIMESCALE_DB_URL: postgres://tsdbadmin:kyfr7wqewfeqs0ra@n84u4a0df0.ebrmatszmi.tsdb.cloud.timescale.com:31334/tsdb?sslmode=require
       CONFIG_PATH: indexer/config/config.toml
     volumes:
       - .:/app
@@ -54,7 +54,7 @@ services:
       - scs-shared-network
     environment:
       SERVICE: api
-      TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
+      TIMESCALE_DB_URL: postgres://tsdbadmin:kyfr7wqewfeqs0ra@n84u4a0df0.ebrmatszmi.tsdb.cloud.timescale.com:31334/tsdb?sslmode=require
       API_HOST: 0.0.0.0
       API_PORT: 8081
     ports:
