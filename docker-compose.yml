@@ -1,8 +1,5 @@
-version: '3.8'
-
 networks:
   scs-shared-network:
-    external: true
 
 services:
   timescaledb:
@@ -30,16 +27,14 @@ services:
     networks:
       - scs-shared-network
     environment:
-      SERVICE: indexer
       MINATO_RPC_URL: https://rpc.minato.soneium.org
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPICS: userops
       KAFKA_GROUP_ID: scs-aa-indexer-dev
       TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
-      CONFIG_PATH: indexer/config/config.toml
+      CONFIG_PATH: /config/config.toml
     volumes:
-      - .:/app
-    working_dir: /app
+      - ./indexer/config:/config
 
   api:
     build:
@@ -53,12 +48,8 @@ services:
     networks:
       - scs-shared-network
     environment:
-      SERVICE: api
       TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
       API_HOST: 0.0.0.0
       API_PORT: 8081
     ports:
       - "8081:8081"
-    working_dir: /app
-    volumes:
-      - .:/app
