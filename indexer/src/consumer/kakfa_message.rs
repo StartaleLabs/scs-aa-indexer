@@ -15,8 +15,6 @@ pub struct UserOpMessage {
     pub timestamp: String,
     pub user_op: serde_json::Value,
     pub meta_data: Option<serde_json::Value>,
-
-    #[serde(deserialize_with = "deserialize_lowercase")]
     pub user_op_hash: String,
 }
 
@@ -47,12 +45,4 @@ impl Status {
             Status::Unknown => 0,
         }
     }
-}
-
-fn deserialize_lowercase<'de, D>(deserializer: D) -> Result<String, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let s: String = Deserialize::deserialize(deserializer)?;
-    Ok(s.to_lowercase())
 }

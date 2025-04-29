@@ -5,6 +5,8 @@ use tokio::time::{sleep, Duration};
 use std::sync::Arc;
 use sqlx::migrate::Migrator;
 
+use tracing_subscriber;
+
 mod config;
 mod listener;
 mod processor;
@@ -19,6 +21,8 @@ static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
     let config = Config::load();
     println!("🔧 Configuration loaded, starting indexer: {:?}", &config.general.indexer_name);
     let (log_sender, log_receiver) = mpsc::channel(100);
@@ -32,7 +36,6 @@ async fn main() {
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
     let kafka_topics = config.storage.kafka_topics.clone();
-
 
     /*
     Start Kafka consumer

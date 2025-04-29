@@ -8,7 +8,7 @@ pub async fn get_user_op(
     State(db): State<Db>,
 ) -> Result<Json<UserOperationRecord>, StatusCode> {
     let user_op_hash = user_op_hash.trim();
-    println!("🔍 Fetching UserOpMessage with hash: {}", user_op_hash);
+    tracing::info!("🔍 Fetching UserOpMessage with hash: {}", user_op_hash);
 
     let query_result = sqlx::query_as::<_, UserOperationRecord>(
         "SELECT * FROM pm_user_operations WHERE user_op_hash = $1"
