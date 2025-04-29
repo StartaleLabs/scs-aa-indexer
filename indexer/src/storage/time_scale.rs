@@ -19,11 +19,18 @@ impl TimescaleStorage {
         Self { pool }
     }
 }
+
+impl TimescaleStorage {
+    pub fn get_pg_pool(&self) -> &PgPool {
+        &self.pool
+    }
+}
+
 #[async_trait]
 impl Storage for TimescaleStorage {
     async fn upsert_user_op_message(&self, msg: UserOpMessage) -> Result<(), Error> {
         let user_op_hash = msg.user_op_hash.trim();
-        let created_at = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
+        let event_time = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
         let status_str = msg.status.to_string();
 
         println!("🟢 Upserting UserOpMessage with hash: {}", &user_op_hash);
@@ -48,8 +55,8 @@ impl Storage for TimescaleStorage {
                 let query = if let Some(ref meta) = msg.meta_data {
                     sqlx::query(
                         "UPDATE pm_user_operations 
-                         SET status = $1, paymasterMode = $2, dataSource = $3,
-                             metadata = metadata || $4::jsonb, updated_at = now()
+                         SET status = $1, paymaster_mode = $2, data_source = $3,
+                             metadata = metadata || $4::jsonb
                          WHERE id = $5"
                     )
                     .bind(&status_str)
@@ -60,8 +67,7 @@ impl Storage for TimescaleStorage {
                 } else {
                     sqlx::query(
                         "UPDATE pm_user_operations 
-                         SET status = $1, paymasterMode = $2, dataSource = $3, 
-                             updated_at = now() 
+                         SET status = $1, paymaster_mode = $2, data_source = $3
                          WHERE id = $4"
                     )
                     .bind(&status_str)
@@ -79,14 +85,14 @@ impl Storage for TimescaleStorage {
                 // Just update metadata fields, not status
                 match sqlx::query(
                     "UPDATE pm_user_operations 
-                     SET policyId = $1, projectId = $2, paymasterMode = $3, dataSource = $4, tokenAddress = $5, updated_at = now() 
+                     SET project_id = $1, paymaster_mode = $2, paymaster_id = $3, token_address = $4, data_source = $5
                      WHERE id = $6"
                 )
-                .bind(&msg.policy_id)
                 .bind(&msg.project_id)
                 .bind(&msg.paymaster_mode)
-                .bind(&msg.data_source)
+                .bind(&msg.paymaster_id)
                 .bind(&msg.token_address)
+                .bind(&msg.data_source)
                 .bind(id)
                 .execute(&self.pool)
                 .await {
@@ -98,20 +104,20 @@ impl Storage for TimescaleStorage {
             // Insert new record
             match sqlx::query(
                 "INSERT INTO pm_user_operations 
-                 (user_op_hash, user_operation, policyId, projectId, paymasterMode, dataSource, status, tokenAddress, metadata, created_at, updated_at) 
+                 (user_op_hash, time, user_operation, project_id, paymaster_mode, fund_type, paymaster_id, token_address, status, data_source, metadata) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
             )
             .bind(&user_op_hash)
+            .bind(&event_time)
             .bind(&msg.user_op)
-            .bind(&msg.policy_id)
             .bind(&msg.project_id)
             .bind(&msg.paymaster_mode)
-            .bind(&msg.data_source)
-            .bind(&status_str)
+            .bind(&msg.fund_type)
+            .bind(&msg.paymaster_id)
             .bind(&msg.token_address)
+            .bind(&status_str)
+            .bind(&msg.data_source)
             .bind(Json(msg.meta_data.as_ref().unwrap_or(&serde_json::json!({}))))
-            .bind(created_at)
-            .bind(created_at)
             .execute(&self.pool)
             .await {
                 Ok(_) => println!("✅ Inserted new record for hash {}", &user_op_hash),
@@ -122,4 +128,3 @@ impl Storage for TimescaleStorage {
         Ok(())
     }
 }
-

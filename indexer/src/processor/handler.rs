@@ -54,10 +54,12 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                     meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
 
                     let msg = UserOpMessage {
-                        project_id: Some(String::new()),
-                        policy_id: Some(String::new()),
+                        project_id: None,
                         paymaster_mode: Some(paymaster_type),
+                        paymaster_id: None,
                         token_address: Some(token_address),
+                        fund_type: None,
+                        chain_id: None,
                         status: if event.success {
                             Status::Success
                         } else {

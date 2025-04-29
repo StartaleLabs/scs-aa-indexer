@@ -57,27 +57,6 @@ The indexed data needs to be stored efficiently. We will support multiple backen
 Timescale DB - Fast lookups for events based on time. Indexed on user op hash
 Kafka/NATS - Streaming for real-time consumer processing from services like paymaster
 
-### Structure:
-
-CREATE TABLE IF NOT EXISTS pm_user_operations (
-    id SERIAL PRIMARY KEY,
-    user_op_hash TEXT NOT NULL,
-    user_operation JSONB NOT NULL,
-    policyId TEXT NOT NULL,
-    projectId TEXT NOT NULL,
-    paymasterMode TEXT NOT NULL,
-    dataSource TEXT NOT NULL,
-    status TEXT NOT NULL,
-    tokenAddress TEXT,
-    metadata JSONB NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-### -- 🔍 Add index to speed up queries filtering by user_op_hash
-CREATE INDEX IF NOT EXISTS idx_user_op_hash ON pm_user_operations(user_op_hash);
-
-
 ## ⚙️ (4) Configuration & Chain Management
 Uses .env and config.toml to manage RPC URLs, contracts, events and storage settings.
 Supports multiple chains with different contract addresses as well as different event signatures.

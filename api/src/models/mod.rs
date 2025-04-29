@@ -9,21 +9,21 @@ pub struct UserOperationRecord {
     pub user_op_hash: String,
     pub user_operation: Option<serde_json::Value>,
 
-    #[sqlx(rename = "policyid")]
-    pub policy_id: Option<String>,
+    #[sqlx(rename = "paymaster_id")]
+    pub paymaster_id: Option<String>,
 
-    #[sqlx(rename = "projectid")]
+    #[sqlx(rename = "project_id")]
     pub project_id: Option<String>,
 
-    #[sqlx(rename = "paymastermode")]
+    #[sqlx(rename = "paymaster_mode")]
     pub paymaster_mode: Option<String>,
 
-    #[sqlx(rename = "datasource")]
+    #[sqlx(rename = "data_source")]
     pub data_source: Option<String>,
 
     pub status: String,
 
-    #[sqlx(rename = "tokenaddress")]
+    #[sqlx(rename = "token_address")]
     pub token_address: Option<String>,
 
     pub metadata: Option<serde_json::Value>,

@@ -6,8 +6,10 @@ use serde::{Deserialize, Serialize};
 pub struct UserOpMessage {
     pub project_id: Option<String>,
     pub paymaster_mode: Option<String>,
-    pub policy_id: Option<String>,
+    pub paymaster_id: Option<String>,
     pub token_address: Option<String>,
+    pub fund_type: Option<String>,
+    pub chain_id: Option<String>,
     pub status: Status,
     pub data_source: Option<String>,
     pub timestamp: String,
