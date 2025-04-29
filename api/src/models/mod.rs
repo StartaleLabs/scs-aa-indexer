@@ -1,11 +1,11 @@
 // api/models/mod.rs
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc, NaiveDateTime};
 
 #[derive(Serialize, Deserialize, Debug, FromRow)]
 pub struct UserOperationRecord {
-    pub time: NaiveDateTime,
+    pub time: DateTime<Utc>,
     pub user_op_hash: String,
     pub user_operation: Option<serde_json::Value>,
     pub paymaster_id: Option<String>,
