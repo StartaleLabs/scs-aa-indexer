@@ -32,18 +32,20 @@ pub fn start_kafka_consumer<S: Storage + Send + Sync + 'static>(
             match consumer.recv().await {
                 Ok(m) => {
                     if let Some(payload) = m.payload_view::<str>().and_then(Result::ok) {
-                        print!("📥 Received message: {:?}", payload);
+                        tracing::info!("📥 Received message: {:?}", payload);
                         match serde_json::from_str::<UserOpMessage>(payload) {
                             Ok(event) => {
                                 if let Err(e) = db.upsert_user_op_message(event).await {
-                                    eprintln!("❌ Failed to upsert UserOpMessage into Timescale: {:?}", e);
+                                    tracing::error!("❌ Failed to upsert UserOpMessage into Timescale: {:?}", e);
                                 }
                             }
-                            Err(e) => eprintln!("❌ Failed to deserialize UserOpMessage: {:?}", e),
+                            Err(e) => tracing::error!("❌ Failed to deserialize UserOpMessage: {:?}", e),
                         }
+                    } else {
+                        tracing::error!("❌ Failed to get payload from message");
                     }
                 }
-                Err(e) => eprintln!("❌ Kafka error: {:?}", e),
+                Err(e) => tracing::error!("❌ Kafka error: {:?}", e),
             }
         }
     });

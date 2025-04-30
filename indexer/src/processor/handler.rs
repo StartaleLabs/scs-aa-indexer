@@ -47,17 +47,19 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                 }
 
                 let user_op_log = AlloyLog::from(log.clone());
-                println!("✅ Matched UserOperationEvent for previous event");
+                tracing::info!("✅ Matched UserOperationEvent for previous event");
 
                 if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
                     meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
                     meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
 
                     let msg = UserOpMessage {
-                        project_id: Some(String::new()),
-                        policy_id: Some(String::new()),
+                        project_id: None,
                         paymaster_mode: Some(paymaster_type),
+                        paymaster_id: None,
                         token_address: Some(token_address),
+                        fund_type: None,
+                        chain_id: None,
                         status: if event.success {
                             Status::Success
                         } else {
@@ -74,15 +76,17 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         meta_data: Some(json!(meta)),
                     };
                     println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
-                    storage.upsert_user_op_message(msg).await.ok();
+                    storage.upsert_user_op_message(msg).await.unwrap_or_else(|e| {
+                        tracing::error!("❌ Failed to upsert UserOpMessage into Storage: {:?}", e);
+                    });
                 }
             } else {
-                println!("⚠️ UserOperationEvent found but no previous log matched.");
+                tracing::warn!("⚠️ UserOperationEvent found but no previous log matched.");
             }
         }
         "UserOperationSponsored" => {
             if let Ok(event) = UserOperationSponsored::decode_log(&alloy_log, true) {
-                println!(
+                tracing::info!(
                     "✅ UserOperation Sponsored:\n\
                     - userOpHash: {:?}\n\
                     - user: {:?}",
@@ -92,7 +96,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
         }
         "RefundProcessed" => {
             if let Ok(event) = RefundProcessed::decode_log(&alloy_log, true) {
-                println!(
+                tracing::info!(
                     "✅ Decoded RefundProcessed:\n\
                     - user: {:?}\n\
                     - amount: {}",
@@ -101,7 +105,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
             }
         }
         _ => {
-            println!("⚠️ Unrecognized event: {:?}", event_name);
+            tracing::warn!("⚠️ Unrecognized event: {:?}", event_name);
         }
     }
 }

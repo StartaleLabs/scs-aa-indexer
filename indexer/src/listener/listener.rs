@@ -47,7 +47,7 @@ impl EventListener {
         // **Extract Events from Contracts**
         let mut event_signatures: Vec<B256> = Vec::new();
         for contract in &chain_config.contracts {
-            println!("-- Listening to Contract: {} on chainId: {}", contract.name, chain_config.chain_id);
+            tracing::info!("-- Listening to Contract: {} on chainId: {}", contract.name, chain_config.chain_id);
             for event in &contract.events {
                 event_signatures.push(B256::from_str(&event.signature).expect("Invalid event signature"));
             }
@@ -66,14 +66,13 @@ impl EventListener {
         match self.provider.get_logs(&filter).await {
             Ok(logs) => {
                 for log in logs {
-                    eprint!("Log: {:?}", log);
+                    tracing::debug!("Log: {:?}", log);
                     if sender.send(log).await.is_err() {
-                        eprintln!("Failed to send log to channel");
+                        tracing::error!("Failed to send log to channel");
                     }
                 }
             }
             Err(e) => eprintln!("Error fetching logs: {:?}", e),
         }
     }
-    
 }

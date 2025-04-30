@@ -2740,6 +2740,8 @@ dependencies = [
  "tokio",
  "tokio-test",
  "toml",
+ "tracing",
+ "tracing-subscriber",
  "url",
  "warp",
 ]

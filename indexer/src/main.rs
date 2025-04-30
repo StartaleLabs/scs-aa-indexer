@@ -3,6 +3,9 @@ use storage::time_scale::TimescaleStorage;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use std::sync::Arc;
+use sqlx::migrate::Migrator;
+
+use tracing_subscriber;
 
 mod config;
 mod listener;
@@ -13,20 +16,26 @@ mod consumer;
 use crate::listener::listener::EventListener;
 use crate::processor::processor::ProcessEvent;
 use crate::config::config::Config;
+
+static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
     let config = Config::load();
     println!("🔧 Configuration loaded, starting indexer: {:?}", &config.general.indexer_name);
     let (log_sender, log_receiver) = mpsc::channel(100);
 
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
-    let kafka_storage = Arc::clone(&db);
+    MIGRATOR.run(db.get_pg_pool()).await.expect("DB migration failed");
+
+    let kafka_storage: Arc<TimescaleStorage> = Arc::clone(&db);
     let indexer_storage = Arc::clone(&db);
 
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
     let kafka_topics = config.storage.kafka_topics.clone();
-
 
     /*
     Start Kafka consumer
