@@ -20,6 +20,9 @@ SELECT create_hypertable('pm_user_operations', by_range('time'));
 CREATE UNIQUE INDEX idx_user_op_hash
   ON pm_user_operations(user_op_hash, time);
 
+-- Create hypertable retention policy
+SELECT add_retention_policy('pm_user_operations', drop_after => INTERVAL '1 month');
+
 CREATE OR REPLACE FUNCTION trigger_set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
