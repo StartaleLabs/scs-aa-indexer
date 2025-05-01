@@ -44,6 +44,7 @@ pub struct StorageConfig {
     pub kafka_topics: Vec<String>,
     pub kafka_group_id: String,
     pub timescale_db_url: String,
+    pub redis_url: String,
 }
 
 impl Config {
@@ -82,7 +83,9 @@ impl Config {
         if let Ok(kafka_group_id) = env::var("KAFKA_GROUP_ID") {
             config.storage.kafka_group_id = kafka_group_id;
         }
-        
+        if let Ok(redis_url) = env::var("REDIS_URL") {
+            config.storage.redis_url = redis_url;
+        }
         config
 
     }

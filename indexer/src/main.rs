@@ -1,5 +1,5 @@
 use consumer::kafka_consumer::start_kafka_consumer;
-use storage::time_scale::TimescaleStorage;
+use crate::{app::AppContext, storage::TimescaleStorage, cache::RedisCoordinator};
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use std::sync::Arc;
@@ -28,10 +28,15 @@ async fn main() {
     let (log_sender, log_receiver) = mpsc::channel(100);
 
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
+    let cache = Arc::new(RedisCoordinator::new(&config.storage.timescale_db_url));
+
+    let app: Arc<_> = Arc::new(AppContext::new(storage, redis));
+
     MIGRATOR.run(db.get_pg_pool()).await.expect("DB migration failed");
 
-    let kafka_storage: Arc<TimescaleStorage> = Arc::clone(&db);
-    let indexer_storage = Arc::clone(&db);
+    // ✅ Kafka and Indexer clone both get access to storage and cache
+    let kafka_app = Arc::clone(&app);
+    let indexer_app = Arc::clone(&app);
 
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
@@ -44,7 +49,7 @@ async fn main() {
         &kafka_broker,
         &kafka_topics[0],
         &kafka_group_id,
-        kafka_storage,
+        kafka_app,
     );
 
     // Start onchain event polling per chain
@@ -69,7 +74,7 @@ async fn main() {
 
     // Start log processor
     tokio::spawn(async move {
-        let event_processor = ProcessEvent::new(&config, indexer_storage);
+        let event_processor = ProcessEvent::new(&config, indexer_app);
         event_processor.process(log_receiver).await;
     });
 

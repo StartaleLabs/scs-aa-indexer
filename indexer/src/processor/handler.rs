@@ -13,7 +13,7 @@ use serde_json::json;
 use crate::{consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage};
 
 // **Process a log based on the event name**
-pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, storage: Arc<S>) {
+pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, app: Arc<AppContext<S>>,) {
     let alloy_log = AlloyLog::from(log.clone());
 
     match event_name {
@@ -60,6 +60,9 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         token_address: Some(token_address),
                         fund_type: None,
                         chain_id: None,
+                        policy_id: None,
+                        native_usd_price: None,
+                        enabled_limits: None,
                         status: if event.success {
                             Status::Success
                         } else {
@@ -76,7 +79,7 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         meta_data: Some(json!(meta)),
                     };
                     println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
-                    storage.upsert_user_op_message(msg).await.unwrap_or_else(|e| {
+                    app.storage.upsert_user_op_message(msg).await.unwrap_or_else(|e| {
                         tracing::error!("❌ Failed to upsert UserOpMessage into Storage: {:?}", e);
                     });
                 }
