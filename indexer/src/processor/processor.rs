@@ -14,16 +14,24 @@ use crate::{
     config::config::Config, 
     processor::handler::process_event
 };
-use crate::storage::Storage;
+use crate::{storage::Storage, cache::Cache};
 
-pub struct ProcessEvent<S: Storage> {
+pub struct ProcessEvent<S, C> 
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{
     event_map: HashMap<B256, (String, Vec<String>)>,
-    app: Arc<AppContext<S>>,
+    app: Arc<AppContext<S, C>>,
 }
 
-impl<S: Storage> ProcessEvent<S> {
+impl<S, C> ProcessEvent<S, C>
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{
     // **Initialize Processor with Dynamic Event Mapping**
-    pub fn new(config: &Config, app: Arc<AppContext<S>>) -> Self {
+    pub fn new(config: &Config, app:Arc<AppContext<S, C>>) -> Self {
         let mut event_map = HashMap::new();
 
         // 🔹 Iterate over all chains & their contracts

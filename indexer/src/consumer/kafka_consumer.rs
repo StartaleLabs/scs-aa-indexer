@@ -6,15 +6,19 @@ use rdkafka::message::Message;
 use crate::{
     consumer::kakfa_message::{UserOpMessage, UserOpPolicyData},
     storage::Storage,
+    cache::Cache,
 };
 use super::super::app::AppContext;
-
-pub fn start_kafka_consumer<S: Storage + Send + Sync + 'static>(
+pub fn start_kafka_consumer<S, C>(
     brokers: &str,
     topic: &str,
     group_id: &str,
-    app: Arc<AppContext<S>>,
-) {
+    app: Arc<AppContext<S, C>>,
+) 
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{
     let consumer: StreamConsumer = ClientConfig::new()
         .set("group.id", group_id)
         .set("bootstrap.servers", brokers)

@@ -1,22 +1,28 @@
 use redis::AsyncCommands;
+use serde_json;
 use crate::consumer::kakfa_message::UserOpPolicyData;
+use crate::cache::Cache;
+use anyhow::Error;
+use async_trait::async_trait;
 
 pub struct RedisCoordinator {
-    #[allow(dead_code)]
     redis: redis::Client,
-} 
+}
 
 impl RedisCoordinator {
     pub fn new(redis_url: &str) -> Self {
         let client = redis::Client::open(redis_url).expect("Invalid Redis URL");
         Self { redis: client }
     }
+}
 
-    pub async fn update_userop_policy(
+#[async_trait]
+impl Cache for RedisCoordinator {
+    async fn update_userop_policy(
         &self,
         user_op_hash: &str,
         partial: UserOpPolicyData,
-    ) -> redis::RedisResult<()> {
+    ) -> Result<(), Error> {
         let mut conn = self.redis.get_async_connection().await?;
         let key = format!("userop:pending:{}", user_op_hash);
 
@@ -27,11 +33,10 @@ impl RedisCoordinator {
             UserOpPolicyData::default()
         };
 
-        // Step 2: Merge new fields
+        // Merge fields
         if partial.enabled_limits.is_some() {
             merged.enabled_limits = partial.enabled_limits;
         }
-
         if partial.policy_id.is_some() {
             merged.policy_id = partial.policy_id;
         }
@@ -48,7 +53,6 @@ impl RedisCoordinator {
             merged.sender = partial.sender;
         }
 
-        // Step 3: Check completeness
         let is_complete = merged.policy_id.is_some()
             && merged.native_usd_price.is_some()
             && merged.actual_gas_cost.is_some()
@@ -56,18 +60,19 @@ impl RedisCoordinator {
 
         if is_complete {
             println!("✅ Complete info for {}. Proceeding to update counters.", user_op_hash);
-            self.update_usage_limits(&mut conn, &merged).await?;
+            Self::update_usage_limits(&mut conn, &merged).await?;
             let _: () = conn.del(&key).await?;
         } else {
-            let serialized = serde_json::to_string(&merged).unwrap();
-            let _: () = conn.set_ex(&key, serialized, 600).await?; // 10-minute TTL
+            let serialized = serde_json::to_string(&merged)?;
+            let _: () = conn.set_ex(&key, serialized, 600).await?;
         }
 
         Ok(())
     }
+}
 
+impl RedisCoordinator {
     async fn update_usage_limits(
-        &self,
         conn: &mut redis::aio::Connection,
         data: &UserOpPolicyData,
     ) -> redis::RedisResult<()> {
@@ -88,6 +93,7 @@ impl RedisCoordinator {
             Ok(cost_wei) => cost_wei * usd / 1e18,
             Err(_) => return Ok(()),
         };
+
         let gas = data.actual_gas_used
             .as_ref()
             .and_then(|v| v.parse::<u64>().ok())
@@ -112,7 +118,6 @@ impl RedisCoordinator {
         }
 
         let _: () = pipe.query_async(conn).await?;
-
         println!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())
     }

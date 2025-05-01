@@ -10,11 +10,19 @@ use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{app::AppContext, consumer::kakfa_message::{UserOpMessage, UserOpPolicyData, Status}, storage::Storage};
+use crate::{app::AppContext, consumer::kakfa_message::{UserOpMessage, UserOpPolicyData, Status}, storage::Storage, cache::Cache};
 
 // **Process a log based on the event name**
-pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, app: Arc<AppContext<S>>,) {
-    let alloy_log = AlloyLog::from(log.clone());
+pub async fn process_event<S, C>(
+    event_name: &str,
+    log: &RpcLog,
+    previous_log: &mut Option<RpcLog>,
+    app: Arc<AppContext<S, C>>,
+)
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{    let alloy_log = AlloyLog::from(log.clone());
 
     match event_name {
         "GasBalanceDeducted" | "PaidGasInTokens" => {
