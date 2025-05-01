@@ -1,8 +1,7 @@
 pub mod time_scale;
+
 use anyhow::Error;
 use async_trait::async_trait;
-
-
 use crate::consumer::kakfa_message::UserOpMessage;
 
 #[async_trait]

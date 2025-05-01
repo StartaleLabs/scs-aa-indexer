@@ -1,10 +1,8 @@
 use redis::AsyncCommands;
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use std::collections::HashMap;
-use indexer::consumer::kakfa_message::UserOpPolicyData;
+use crate::consumer::kakfa_message::UserOpPolicyData;
 
 pub struct RedisCoordinator {
+    #[allow(dead_code)]
     redis: redis::Client,
 } 
 
@@ -59,10 +57,10 @@ impl RedisCoordinator {
         if is_complete {
             println!("✅ Complete info for {}. Proceeding to update counters.", user_op_hash);
             self.update_usage_limits(&mut conn, &merged).await?;
-            conn.del(&key).await?;
+            let _: () = conn.del(&key).await?;
         } else {
             let serialized = serde_json::to_string(&merged).unwrap();
-            conn.set_ex(&key, serialized, 600).await?; // 10-minute TTL
+            let _: () = conn.set_ex(&key, serialized, 600).await?; // 10-minute TTL
         }
 
         Ok(())
@@ -113,7 +111,7 @@ impl RedisCoordinator {
             }
         }
 
-        pipe.query_async(conn).await?;
+        let _: () = pipe.query_async(conn).await?;
 
         println!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())

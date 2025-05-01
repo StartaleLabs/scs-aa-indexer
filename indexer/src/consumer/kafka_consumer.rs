@@ -4,9 +4,10 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::ClientConfig;
 use rdkafka::message::Message;
 use crate::{
-    consumer::kakfa_message::UserOpMessage,
-    storage::Storage
+    consumer::kakfa_message::{UserOpMessage, UserOpPolicyData},
+    storage::Storage,
 };
+use super::super::app::AppContext;
 
 pub fn start_kafka_consumer<S: Storage + Send + Sync + 'static>(
     brokers: &str,
@@ -34,6 +35,23 @@ pub fn start_kafka_consumer<S: Storage + Send + Sync + 'static>(
                         tracing::info!("📥 Received message: {:?}", payload);
                         match serde_json::from_str::<UserOpMessage>(payload) {
                             Ok(event) => {
+                                // ✅ 1. Update Redis
+                                if let Some(policy_id) = event.policy_id.clone() {
+                                    tracing::info!("🟢 Updating Redis with policy_id: {}", policy_id);
+                                    let redis_payload = UserOpPolicyData {
+                                        policy_id: Some(policy_id),
+                                        native_usd_price: event.native_usd_price,
+                                        sender: event.user_op.get("sender").and_then(|v| v.as_str()).map(|s| s.to_string()),
+                                        enabled_limits: event.enabled_limits.clone(),
+                                        actual_gas_used: None,
+                                        actual_gas_cost: None,
+                                    };
+
+                                    if let Err(e) = app.cache.update_userop_policy(&event.user_op_hash, redis_payload).await {
+                                        tracing::error!("❌ Failed to update Redis policy: {:?}", e);
+                                    }
+                                }
+                                // ✅ 2. Update Redis
                                 if let Err(e) = app.storage.upsert_user_op_message(event).await {
                                     tracing::error!("❌ Failed to upsert UserOpMessage into Timescale: {:?}", e);
                                 }

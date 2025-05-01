@@ -10,7 +10,7 @@ use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage};
+use crate::{app::AppContext, consumer::kakfa_message::{UserOpMessage, UserOpPolicyData, Status}, storage::Storage};
 
 // **Process a log based on the event name**
 pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous_log: &mut Option<RpcLog>, app: Arc<AppContext<S>>,) {
@@ -78,6 +78,20 @@ pub async fn process_event<S: Storage> (event_name: &str, log: &RpcLog, previous
                         }),
                         meta_data: Some(json!(meta)),
                     };
+                    // ✅ Update Redis with info
+                    let redis_payload = UserOpPolicyData {
+                        policy_id: None,
+                        native_usd_price: None,
+                        actual_gas_cost: Some(event.actualGasCost.to_string()),
+                        actual_gas_used: Some(event.actualGasUsed.to_string()),
+                        sender: None,
+                        enabled_limits: None, 
+                    };
+
+                    if let Err(e) = app.cache.update_userop_policy(&msg.user_op_hash, redis_payload).await {
+                        tracing::error!("❌ Failed to update Redis with indexer data: {:?}", e);
+                    }
+                    // ✅ Update Timescale with info
                     println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
                     app.storage.upsert_user_op_message(msg).await.unwrap_or_else(|e| {
                         tracing::error!("❌ Failed to upsert UserOpMessage into Storage: {:?}", e);

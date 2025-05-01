@@ -86,7 +86,7 @@ impl Config {
         if let Ok(redis_url) = env::var("REDIS_URL") {
             config.storage.redis_url = redis_url;
         }
+        
         config
-
     }
 }

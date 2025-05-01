@@ -4,11 +4,11 @@ use crate::storage::Storage;
 
 pub struct AppContext<S: Storage> {
     pub storage: Arc<S>,
-    pub redis: Arc<UserOpRedisCoordinator>,
+    pub cache: Arc<RedisCoordinator>,
 }
 
 impl<S: Storage> AppContext<S> {
-    pub fn new(storage: Arc<S>, redis: Arc<UserOpRedisCoordinator>) -> Self {
-        Self { storage, redis }
+    pub fn new(storage: Arc<S>, cache: Arc<RedisCoordinator>) -> Self {
+        Self { storage, cache }
     }
 }

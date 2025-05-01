@@ -1,21 +1,23 @@
-use consumer::kafka_consumer::start_kafka_consumer;
-use crate::{app::AppContext, storage::TimescaleStorage, cache::RedisCoordinator};
-use tokio::sync::mpsc;
-use tokio::time::{sleep, Duration};
-use std::sync::Arc;
-use sqlx::migrate::Migrator;
-
-use tracing_subscriber;
 
 mod config;
 mod listener;
 mod processor;
 mod storage;
 mod consumer;
+mod app;
+mod cache;
 
+use consumer::kafka_consumer::start_kafka_consumer;
+use crate::{app::AppContext, storage::time_scale::TimescaleStorage, cache::redis::RedisCoordinator};
 use crate::listener::listener::EventListener;
 use crate::processor::processor::ProcessEvent;
 use crate::config::config::Config;
+use tokio::sync::mpsc;
+use tokio::time::{sleep, Duration};
+use std::sync::Arc;
+use sqlx::migrate::Migrator;
+use tracing_subscriber;
+
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
@@ -28,11 +30,12 @@ async fn main() {
     let (log_sender, log_receiver) = mpsc::channel(100);
 
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
-    let cache = Arc::new(RedisCoordinator::new(&config.storage.timescale_db_url));
+    let cache = Arc::new(RedisCoordinator::new(&config.storage.redis_url));
 
-    let app: Arc<_> = Arc::new(AppContext::new(storage, redis));
+    let db_clone = Arc::clone(&db); // Clone the Arc before moving it
+    let app: Arc<_> = Arc::new(AppContext::new(db, cache));
 
-    MIGRATOR.run(db.get_pg_pool()).await.expect("DB migration failed");
+    MIGRATOR.run(db_clone.get_pg_pool()).await.expect("DB migration failed");
 
     // ✅ Kafka and Indexer clone both get access to storage and cache
     let kafka_app = Arc::clone(&app);
