@@ -26,6 +26,7 @@ impl Cache for RedisCoordinator {
         let mut conn = self.redis.get_async_connection().await?;
         let key = format!("userop:pending:{}", user_op_hash);
 
+        println!("🟢 Updating Redis with key: {}", key);
         let existing: Option<String> = conn.get(&key).await?;
         let mut merged = if let Some(json_str) = existing {
             serde_json::from_str::<UserOpPolicyData>(&json_str).unwrap_or_default()
@@ -86,22 +87,37 @@ impl RedisCoordinator {
         }
 
         let policy_id = data.policy_id.as_ref().unwrap();
-        let usd = data.native_usd_price.unwrap();
-        let actual_gas_cost = data.actual_gas_cost.as_ref().unwrap();
-
-        let usd_spent = match actual_gas_cost.parse::<f64>() {
-            Ok(cost_wei) => cost_wei * usd / 1e18,
-            Err(_) => return Ok(()),
+        let usd_price_str = data.native_usd_price.as_ref().unwrap();
+        let usd_price = match usd_price_str.parse::<f64>() {
+            Ok(val) => val,
+            Err(_) => {
+                println!("❌ Failed to parse native_usd_price: {:?}", usd_price_str);
+                return Ok(());
+            }
         };
+
+        let actual_gas_cost_str = data.actual_gas_cost.as_ref().unwrap();
+        let cost_wei = match actual_gas_cost_str.parse::<f64>() {
+            Ok(val) => val,
+            Err(_) => {
+                println!("❌ Failed to parse actual_gas_cost: {:?}", actual_gas_cost_str);
+                return Ok(());
+            }
+        };
+
+        let usd_spent = cost_wei * usd_price / 1e18;
 
         let gas = data.actual_gas_used
             .as_ref()
             .and_then(|v| v.parse::<u64>().ok())
             .unwrap_or(0);
 
+        println!("🔄 Updating usage limits for policy_id: {}", policy_id);
+
         let mut pipe = redis::pipe();
 
         if enabled.contains(&"GLOBAL".to_string()) {
+            println!("🔄 Updating global usage limits");
             let global_prefix = format!("global:{}", policy_id);
             pipe.cmd("INCRBY").arg(format!("{}:ops", global_prefix)).arg(1)
                 .cmd("INCRBY").arg(format!("{}:gas", global_prefix)).arg(gas)
@@ -109,6 +125,7 @@ impl RedisCoordinator {
         }
 
         if enabled.contains(&"USER".to_string()) {
+            println!("🔄 Updating user-specific usage limits");
             if let Some(user) = data.sender.as_ref() {
                 let user_prefix = format!("user:{}:{}", policy_id, user);
                 pipe.cmd("INCRBY").arg(format!("{}:ops", user_prefix)).arg(1)

@@ -95,7 +95,7 @@ where
                         sender: None,
                         enabled_limits: None, 
                     };
-
+                    println!("redis onchain payload {}", serde_json::to_string(&redis_payload).unwrap());
                     if let Err(e) = app.cache.update_userop_policy(&msg.user_op_hash, redis_payload).await {
                         tracing::error!("❌ Failed to update Redis with indexer data: {:?}", e);
                     }

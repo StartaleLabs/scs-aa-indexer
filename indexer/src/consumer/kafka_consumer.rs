@@ -44,7 +44,7 @@ where
                                     tracing::info!("🟢 Updating Redis with policy_id: {}", policy_id);
                                     let redis_payload = UserOpPolicyData {
                                         policy_id: Some(policy_id),
-                                        native_usd_price: event.native_usd_price,
+                                        native_usd_price: event.native_usd_price.clone(),
                                         sender: event.user_op.get("sender").and_then(|v| v.as_str()).map(|s| s.to_string()),
                                         enabled_limits: event.enabled_limits.clone(),
                                         actual_gas_used: None,
