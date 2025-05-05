@@ -34,6 +34,7 @@ services:
       KAFKA_GROUP_ID: scs-aa-indexer-dev
       TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
       CONFIG_PATH: /config/config.toml
+      REDIS_URL: redis://redis:6379
       RUST_LOG: debug
     volumes:
       - ./indexer/config:/config

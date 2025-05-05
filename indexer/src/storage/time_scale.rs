@@ -49,9 +49,12 @@ impl Storage for TimescaleStorage {
             
             let incoming_priority = incoming_status.priority();
             let existing_priority = current_status.priority();
+            let paymaster_mode: Option<String> = msg.paymaster_mode.as_ref().map(|m| m.to_string());
+
             println!("➡️ incoming_priority: {}, existing_priority: {}", incoming_priority, existing_priority);
             if incoming_priority > existing_priority {
                 // Update status + metadata if higher priority
+
                 let query = if let Some(ref meta) = msg.meta_data {
                     sqlx::query(
                         "UPDATE pm_user_operations 
@@ -60,7 +63,7 @@ impl Storage for TimescaleStorage {
                          WHERE user_op_hash = $5"
                     )
                     .bind(&status_str)
-                    .bind(&msg.paymaster_mode)
+                    .bind(&paymaster_mode)
                     .bind(&msg.data_source)
                     .bind(Json(meta))
                     .bind(user_op_hash)
@@ -71,7 +74,7 @@ impl Storage for TimescaleStorage {
                          WHERE user_op_hash = $4"
                     )
                     .bind(&status_str)
-                    .bind(&msg.paymaster_mode)
+                    .bind(&paymaster_mode)                    
                     .bind(&msg.data_source)
                     .bind(user_op_hash)
                 };
@@ -89,7 +92,7 @@ impl Storage for TimescaleStorage {
                      WHERE user_op_hash = $6"
                 )
                 .bind(&msg.project_id)
-                .bind(&msg.paymaster_mode)
+                .bind(&paymaster_mode)    
                 .bind(&msg.paymaster_id)
                 .bind(&msg.token_address)
                 .bind(&msg.data_source)
@@ -111,7 +114,7 @@ impl Storage for TimescaleStorage {
             .bind(&user_op_hash)
             .bind(&msg.user_op)
             .bind(&msg.project_id)
-            .bind(&msg.paymaster_mode)
+            .bind(&msg.paymaster_mode.as_ref().map(|m| m.to_string()))
             .bind(&msg.fund_type)
             .bind(&msg.paymaster_id)
             .bind(&msg.token_address)

@@ -9,20 +9,29 @@ use alloy::{
 use std::collections::HashMap;
 use std::sync::Arc;
 use alloy::hex;
+use crate::app::AppContext;
 use crate::{
     config::config::Config, 
     processor::handler::process_event
 };
-use crate::storage::Storage;
+use crate::{storage::Storage, cache::Cache};
 
-pub struct ProcessEvent<S: Storage> {
+pub struct ProcessEvent<S, C> 
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{
     event_map: HashMap<B256, (String, Vec<String>)>,
-    storage: Arc<S>,
+    app: Arc<AppContext<S, C>>,
 }
 
-impl<S: Storage> ProcessEvent<S> {
+impl<S, C> ProcessEvent<S, C>
+where
+    S: Storage + Send + Sync + 'static,
+    C: Cache + Send + Sync + 'static,
+{
     // **Initialize Processor with Dynamic Event Mapping**
-    pub fn new(config: &Config, storage: Arc<S>) -> Self {
+    pub fn new(config: &Config, app:Arc<AppContext<S, C>>) -> Self {
         let mut event_map = HashMap::new();
 
         // 🔹 Iterate over all chains & their contracts
@@ -36,7 +45,7 @@ impl<S: Storage> ProcessEvent<S> {
                 }
             }
         }
-        Self { event_map, storage }
+        Self { event_map, app }
     }
 
     // **Process Incoming Logs Dynamically**
@@ -46,13 +55,13 @@ impl<S: Storage> ProcessEvent<S> {
         while let Some(log) = receiver.recv().await {
             if let Some(event_signature) = log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
-                    println!("✅ Processing Event: {}", event_name);
-                    process_event(event_name, &log, &mut previous_log, Arc::clone(&self.storage)).await;
+                    tracing::info!("✅ Processing Event: {}", event_name);
+                    process_event(event_name, &log, &mut previous_log, Arc::clone(&self.app)).await;
                 } else {
-                    println!("⚠️ Unknown event signature: {:?}", event_signature);
+                    tracing::info!("⚠️ Unknown event signature: {:?}", event_signature);
                 }
             } else {
-                println!("⚠️ Log has no topics.");
+                tracing::info!("⚠️ Log has no topics.");
             }
         }
     }

@@ -3,3 +3,4 @@ indexer/target
 indexer/.DS_Store
 indexer/src/.DS_Store
 target
+indexer/src/storage/.DS_Store

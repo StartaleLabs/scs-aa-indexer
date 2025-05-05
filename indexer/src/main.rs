@@ -1,21 +1,24 @@
-use consumer::kafka_consumer::start_kafka_consumer;
-use storage::time_scale::TimescaleStorage;
-use tokio::sync::mpsc;
-use tokio::time::{sleep, Duration};
-use std::sync::Arc;
-use sqlx::migrate::Migrator;
-
-use tracing_subscriber;
-
 mod config;
 mod listener;
 mod processor;
 mod storage;
 mod consumer;
+mod app;
+mod cache;
+mod model;
+use std::sync::Arc;
+use tokio::sync::mpsc;
+use tokio::time::{sleep, Duration};
+use tracing_subscriber;
+use sqlx::migrate::Migrator;
 
-use crate::listener::listener::EventListener;
-use crate::processor::processor::ProcessEvent;
-use crate::config::config::Config;
+use consumer::kafka_consumer::start_kafka_consumer;
+use listener::listener::EventListener;
+use processor::processor::ProcessEvent;
+use config::config::Config;
+use app::AppContext;
+use storage::time_scale::TimescaleStorage;
+use cache::redis::RedisCoordinator;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
@@ -25,29 +28,32 @@ async fn main() {
 
     let config = Config::load();
     println!("🔧 Configuration loaded, starting indexer: {:?}", &config.general.indexer_name);
+
     let (log_sender, log_receiver) = mpsc::channel(100);
 
+    // ✅ Initialize DB and Redis
     let db = Arc::new(TimescaleStorage::new(&config.storage.timescale_db_url).await);
-    MIGRATOR.run(db.get_pg_pool()).await.expect("DB migration failed");
+    let redis = Arc::new(RedisCoordinator::new(&config.storage.redis_url));
 
-    let kafka_storage: Arc<TimescaleStorage> = Arc::clone(&db);
-    let indexer_storage = Arc::clone(&db);
+    // ✅ DB migration
+    MIGRATOR.run(db.get_pg_pool())
+        .await
+        .expect("DB migration failed");
 
-    let kafka_group_id = config.storage.kafka_group_id.clone();
-    let kafka_broker = config.storage.kafka_broker.clone();
-    let kafka_topics = config.storage.kafka_topics.clone();
+    // ✅ Wrap both into shared AppContext
+    let app: Arc<_> = Arc::new(AppContext::new(db, redis));
+    let kafka_app = Arc::clone(&app);
+    let indexer_app = Arc::clone(&app);
 
-    /*
-    Start Kafka consumer
-    */
+    // ✅ Start Kafka consumer
     start_kafka_consumer(
-        &kafka_broker,
-        &kafka_topics[0],
-        &kafka_group_id,
-        kafka_storage,
+        &config.storage.kafka_broker,
+        &config.storage.kafka_topics[0],
+        &config.storage.kafka_group_id,
+        kafka_app,
     );
 
-    // Start onchain event polling per chain
+    // ✅ Spawn per-chain listeners
     for (chain_name, chain) in config.chains.clone() {
         if chain.active {
             let rpc_url = chain.rpc_url.clone();
@@ -67,13 +73,13 @@ async fn main() {
         }
     }
 
-    // Start log processor
+    // ✅ Process logs
     tokio::spawn(async move {
-        let event_processor = ProcessEvent::new(&config, indexer_storage);
+        let event_processor = ProcessEvent::new(&config, indexer_app);
         event_processor.process(log_receiver).await;
     });
 
-    // Keep alive
+    // ✅ Keep alive
     loop {
         sleep(Duration::from_secs(3600)).await;
     }

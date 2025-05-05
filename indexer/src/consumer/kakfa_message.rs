@@ -1,12 +1,15 @@
 use derive_more::derive::Display;
 use serde::{Deserialize, Serialize};
 
+use crate::model::paymaster_type::PaymasterMode;
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOpMessage {
     pub project_id: Option<String>,
-    pub paymaster_mode: Option<String>,
+    pub paymaster_mode: Option<PaymasterMode>,
     pub paymaster_id: Option<String>,
+    pub policy_id: Option<String>,
     pub token_address: Option<String>,
     pub fund_type: Option<String>,
     pub chain_id: Option<String>,
@@ -15,7 +18,9 @@ pub struct UserOpMessage {
     pub timestamp: String,
     pub user_op: serde_json::Value,
     pub meta_data: Option<serde_json::Value>,
+    pub native_usd_price: Option<String>,
     pub user_op_hash: String,
+    pub enabled_limits: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Display)]

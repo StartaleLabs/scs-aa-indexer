@@ -15,7 +15,7 @@ dotenv = "0.15" # Environment variables
 log = "0.4" # Logging
 env_logger = "0.10" # Logger initialization
 sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "json", "chrono"] } # Database
-redis = "0.23" # Redis for caching
+redis = { version = "0.23", features = ["tokio-comp", "tokio-native-tls-comp"] } # Caching
 opensearch = "2.3.0" # OpenSearch indexing
 warp = "0.3" # Web API (REST/GraphQL)
 async-trait = "0.1" # Async trait for better modularity
