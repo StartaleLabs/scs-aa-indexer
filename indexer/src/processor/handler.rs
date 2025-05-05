@@ -41,7 +41,7 @@ where
                     meta.insert("deductedUser".to_string(), json!(event.user));
                     meta.insert("deductedAmount".to_string(), json!(event.amount));
                     meta.insert("premium".to_string(), json!(event.premium));
-                    paymaster_type = "SPONSORSHIP".to_string();
+                    paymaster_type = "SPONSORSHIP".to_string(); // Ensure paymaster_type is not moved
                 }
 
                 if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
@@ -58,12 +58,12 @@ where
                 tracing::info!("✅ Matched UserOperationEvent for previous event");
 
                 if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
-                    meta.insert("actualGasCost".to_string(), json!(event.actualGasCost));
-                    meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed));
+                    meta.insert("actualGasCost".to_string(), json!(event.actualGasCost.to_string()));
+                    meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed.to_string()));
 
                     let msg = UserOpMessage {
                         project_id: None,
-                        paymaster_mode: Some(paymaster_type),
+                        paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),
                         fund_type: None,
@@ -87,17 +87,19 @@ where
                         meta_data: Some(json!(meta)),
                     };
                     // ✅ Update Redis with info
-                    let redis_payload = UserOpPolicyData {
-                        policy_id: None,
-                        native_usd_price: None,
-                        actual_gas_cost: Some(event.actualGasCost.to_string()),
-                        actual_gas_used: Some(event.actualGasUsed.to_string()),
-                        sender: None,
-                        enabled_limits: None, 
-                    };
-                    println!("redis onchain payload {}", serde_json::to_string(&redis_payload).unwrap());
-                    if let Err(e) = app.cache.update_userop_policy(&msg.user_op_hash, redis_payload).await {
-                        tracing::error!("❌ Failed to update Redis with indexer data: {:?}", e);
+                    if paymaster_type == "SPONSORSHIP" {
+                        let redis_payload = UserOpPolicyData {
+                            policy_id: None,
+                            native_usd_price: None,
+                            actual_gas_cost: Some(event.actualGasCost.to_string()),
+                            actual_gas_used: Some(event.actualGasUsed.to_string()),
+                            sender: None,
+                            enabled_limits: None, 
+                        };
+                        println!("redis onchain payload {}", serde_json::to_string(&redis_payload).unwrap());
+                        if let Err(e) = app.cache.update_userop_policy(&msg.user_op_hash, redis_payload).await {
+                            tracing::error!("❌ Failed to update Redis with indexer data: {:?}", e);
+                        }
                     }
                     // ✅ Update Timescale with info
                     println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());

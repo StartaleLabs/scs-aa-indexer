@@ -86,7 +86,7 @@ impl RedisCoordinator {
             tracing::info!("⚠️ Skipping update: enabled_limits is empty.");
             return Ok(());
         }
-
+    
         let policy_id = data.policy_id.as_ref().unwrap();
         let usd_price_str = data.native_usd_price.as_ref().unwrap();
         let usd_price = match usd_price_str.parse::<f64>() {
@@ -96,47 +96,53 @@ impl RedisCoordinator {
                 return Ok(());
             }
         };
-
+    
         let actual_gas_cost_str = data.actual_gas_cost.as_ref().unwrap();
-        let cost_wei = match actual_gas_cost_str.parse::<f64>() {
-            Ok(val) => val,
-            Err(_) => {
-                tracing::error!("❌ Failed to parse actual_gas_cost: {:?}", actual_gas_cost_str);
-                return Ok(());
+        let cost_wei: f64 = match actual_gas_cost_str {
+            s if s.starts_with("0x") => {
+                u64::from_str_radix(s.trim_start_matches("0x"), 16)
+                    .map(|v| v as f64)
+                    .map_err(|e| e.to_string())
             }
+            s => s.parse::<f64>().map_err(|e| e.to_string()),
+        }
+        .unwrap_or(0.0);
+    
+        let gas: u64 = match data.actual_gas_used.as_ref() {
+            Some(val) if val.starts_with("0x") => {
+                u64::from_str_radix(val.trim_start_matches("0x"), 16).unwrap_or(0)
+            }
+            Some(val) => val.parse::<u64>().unwrap_or(0),
+            None => 0,
         };
-
+    
         let usd_spent = cost_wei * usd_price / 1e18;
-
-        let gas = data.actual_gas_used
-            .as_ref()
-            .and_then(|v| v.parse::<u64>().ok())
-            .unwrap_or(0);
-
-        tracing::info!("🔄 Updating usage limits for policy_id: {}", policy_id);
-
+        
         let mut pipe = redis::pipe();
-
+    
         if enabled.contains(&"GLOBAL".to_string()) {
             tracing::info!("🔄 Updating global usage limits");
             let global_prefix = format!("global:{}", policy_id);
             pipe.cmd("INCRBY").arg(format!("{}:ops", global_prefix)).arg(1)
                 .cmd("INCRBY").arg(format!("{}:gas", global_prefix)).arg(gas)
-                .cmd("INCRBYFLOAT").arg(format!("{}:usd", global_prefix)).arg(usd_spent);
+                .cmd("INCRBYFLOAT").arg(format!("{}:usd", global_prefix))
+                .arg(format!("{:.6}", usd_spent));
         }
-
+    
         if enabled.contains(&"USER".to_string()) {
             tracing::info!("🔄 Updating user-specific usage limits");
             if let Some(user) = data.sender.as_ref() {
                 let user_prefix = format!("user:{}:{}", policy_id, user);
                 pipe.cmd("INCRBY").arg(format!("{}:ops", user_prefix)).arg(1)
                     .cmd("INCRBY").arg(format!("{}:gas", user_prefix)).arg(gas)
-                    .cmd("INCRBYFLOAT").arg(format!("{}:usd", user_prefix)).arg(usd_spent);
+                    .cmd("INCRBYFLOAT").arg(format!("{}:usd", user_prefix))
+                    .arg(format!("{:.6}", usd_spent));
             }
         }
-
+    
         let _: () = pipe.query_async(conn).await?;
         tracing::info!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())
     }
+    
 }
