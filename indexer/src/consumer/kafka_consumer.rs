@@ -3,6 +3,7 @@ use std::sync::Arc;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::ClientConfig;
 use rdkafka::message::Message;
+use crate::model::paymaster_type::PaymasterMode;
 use crate::{
     consumer::kakfa_message::UserOpMessage,
     model::user_op_policy::UserOpPolicyData,
@@ -41,7 +42,7 @@ where
                         match serde_json::from_str::<UserOpMessage>(payload) {
                             Ok(event) => {
                                 // ✅ 1. Update Redis
-                                if event.paymaster_mode.as_deref() == Some("SPONSORSHIP") {
+                                if matches!(event.paymaster_mode, Some(PaymasterMode::SPONSORSHIP)) {
                                     if let Some(policy_id) = event.policy_id.clone() {
                                         tracing::info!("🟢 Updating Redis with policy_id: {}", policy_id);
                                         let redis_payload = UserOpPolicyData {

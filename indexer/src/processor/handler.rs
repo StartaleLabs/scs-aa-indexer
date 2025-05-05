@@ -10,7 +10,7 @@ use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{app::AppContext,model::user_op_policy::UserOpPolicyData, consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage, cache::Cache};
+use crate::{app::AppContext, cache::Cache, consumer::kakfa_message::{Status, UserOpMessage}, model::{paymaster_type::PaymasterMode, user_op_policy::UserOpPolicyData}, storage::Storage};
 
 // **Process a log based on the event name**
 pub async fn process_event<S, C>(
@@ -22,8 +22,8 @@ pub async fn process_event<S, C>(
 where
     S: Storage + Send + Sync + 'static,
     C: Cache + Send + Sync + 'static,
-{    let alloy_log = AlloyLog::from(log.clone());
-
+{   
+    let alloy_log = AlloyLog::from(log.clone());
     match event_name {
         "GasBalanceDeducted" | "PaidGasInTokens" => {
             // Store this log to be paired with the next UserOperationEvent
@@ -34,14 +34,14 @@ where
                 let prev_log = AlloyLog::from(prev_log.clone());
 
                 let mut meta = serde_json::Map::new();
-                let mut paymaster_type = "UNKNOWN".to_string();
+                let mut paymaster_type = PaymasterMode::UNKNOWN;
                 let mut token_address = String::new();
 
                 if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
                     meta.insert("deductedUser".to_string(), json!(event.user));
                     meta.insert("deductedAmount".to_string(), json!(event.amount));
                     meta.insert("premium".to_string(), json!(event.premium));
-                    paymaster_type = "SPONSORSHIP".to_string(); // Ensure paymaster_type is not moved
+                    paymaster_type = PaymasterMode::SPONSORSHIP;
                 }
 
                 if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
@@ -50,7 +50,7 @@ where
                     meta.insert("tokenCharge".to_string(), json!(event.tokenCharge));
                     meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup));
                     meta.insert("exchangeRate".to_string(), json!(event.exchangeRate));
-                    paymaster_type = "TOKEN".to_string();
+                    paymaster_type = PaymasterMode::TOKEN;
                     token_address = format!("{:?}", event.token);
                 }
 
@@ -87,7 +87,7 @@ where
                         meta_data: Some(json!(meta)),
                     };
                     // ✅ Update Redis with info
-                    if paymaster_type == "SPONSORSHIP" {
+                    if paymaster_type == PaymasterMode::SPONSORSHIP {
                         let redis_payload = UserOpPolicyData {
                             policy_id: None,
                             native_usd_price: None,

@@ -1,11 +1,13 @@
 use derive_more::derive::Display;
 use serde::{Deserialize, Serialize};
 
+use crate::model::paymaster_type::PaymasterMode;
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOpMessage {
     pub project_id: Option<String>,
-    pub paymaster_mode: Option<String>,
+    pub paymaster_mode: Option<PaymasterMode>,
     pub paymaster_id: Option<String>,
     pub policy_id: Option<String>,
     pub token_address: Option<String>,
