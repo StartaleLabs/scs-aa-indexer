@@ -5,7 +5,7 @@ mod storage;
 mod consumer;
 mod app;
 mod cache;
-
+mod model;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};

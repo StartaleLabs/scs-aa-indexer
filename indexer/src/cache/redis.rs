@@ -1,6 +1,6 @@
 use redis::AsyncCommands;
 use serde_json;
-use crate::consumer::kakfa_message::UserOpPolicyData;
+use crate::model::user_op_policy::UserOpPolicyData;
 use crate::cache::Cache;
 use anyhow::Error;
 use async_trait::async_trait;
@@ -26,7 +26,8 @@ impl Cache for RedisCoordinator {
         let mut conn = self.redis.get_async_connection().await?;
         let key = format!("userop:pending:{}", user_op_hash);
 
-        println!("🟢 Updating Redis with key: {}", key);
+        tracing::info!("🟢 Updating Redis with key: {}", key);
+
         let existing: Option<String> = conn.get(&key).await?;
         let mut merged = if let Some(json_str) = existing {
             serde_json::from_str::<UserOpPolicyData>(&json_str).unwrap_or_default()
@@ -60,7 +61,7 @@ impl Cache for RedisCoordinator {
             && merged.actual_gas_used.is_some();
 
         if is_complete {
-            println!("✅ Complete info for {}. Proceeding to update counters.", user_op_hash);
+            tracing::info!("✅ Complete info for {}. Proceeding to update counters.", user_op_hash);
             Self::update_usage_limits(&mut conn, &merged).await?;
             let _: () = conn.del(&key).await?;
         } else {
@@ -78,11 +79,11 @@ impl RedisCoordinator {
         data: &UserOpPolicyData,
     ) -> redis::RedisResult<()> {
         let Some(enabled) = data.enabled_limits.as_ref() else {
-            println!("⚠️ Skipping update: no enabled limits specified.");
+            tracing::info!("⚠️ Skipping update: no enabled limits specified.");
             return Ok(());
         };
         if enabled.is_empty() {
-            println!("⚠️ Skipping update: enabled_limits is empty.");
+            tracing::info!("⚠️ Skipping update: enabled_limits is empty.");
             return Ok(());
         }
 
@@ -91,7 +92,7 @@ impl RedisCoordinator {
         let usd_price = match usd_price_str.parse::<f64>() {
             Ok(val) => val,
             Err(_) => {
-                println!("❌ Failed to parse native_usd_price: {:?}", usd_price_str);
+                tracing::error!("❌ Failed to parse native_usd_price: {:?}", usd_price_str);
                 return Ok(());
             }
         };
@@ -100,7 +101,7 @@ impl RedisCoordinator {
         let cost_wei = match actual_gas_cost_str.parse::<f64>() {
             Ok(val) => val,
             Err(_) => {
-                println!("❌ Failed to parse actual_gas_cost: {:?}", actual_gas_cost_str);
+                tracing::error!("❌ Failed to parse actual_gas_cost: {:?}", actual_gas_cost_str);
                 return Ok(());
             }
         };
@@ -112,12 +113,12 @@ impl RedisCoordinator {
             .and_then(|v| v.parse::<u64>().ok())
             .unwrap_or(0);
 
-        println!("🔄 Updating usage limits for policy_id: {}", policy_id);
+        tracing::info!("🔄 Updating usage limits for policy_id: {}", policy_id);
 
         let mut pipe = redis::pipe();
 
         if enabled.contains(&"GLOBAL".to_string()) {
-            println!("🔄 Updating global usage limits");
+            tracing::info!("🔄 Updating global usage limits");
             let global_prefix = format!("global:{}", policy_id);
             pipe.cmd("INCRBY").arg(format!("{}:ops", global_prefix)).arg(1)
                 .cmd("INCRBY").arg(format!("{}:gas", global_prefix)).arg(gas)
@@ -125,7 +126,7 @@ impl RedisCoordinator {
         }
 
         if enabled.contains(&"USER".to_string()) {
-            println!("🔄 Updating user-specific usage limits");
+            tracing::info!("🔄 Updating user-specific usage limits");
             if let Some(user) = data.sender.as_ref() {
                 let user_prefix = format!("user:{}:{}", policy_id, user);
                 pipe.cmd("INCRBY").arg(format!("{}:ops", user_prefix)).arg(1)
@@ -135,7 +136,7 @@ impl RedisCoordinator {
         }
 
         let _: () = pipe.query_async(conn).await?;
-        println!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
+        tracing::info!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())
     }
 }

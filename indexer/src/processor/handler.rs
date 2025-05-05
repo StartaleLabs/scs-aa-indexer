@@ -10,7 +10,7 @@ use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{app::AppContext, consumer::kakfa_message::{UserOpMessage, UserOpPolicyData, Status}, storage::Storage, cache::Cache};
+use crate::{app::AppContext,model::user_op_policy::UserOpPolicyData, consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage, cache::Cache};
 
 // **Process a log based on the event name**
 pub async fn process_event<S, C>(

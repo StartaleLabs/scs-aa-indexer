@@ -4,7 +4,8 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::ClientConfig;
 use rdkafka::message::Message;
 use crate::{
-    consumer::kakfa_message::{UserOpMessage, UserOpPolicyData},
+    consumer::kakfa_message::UserOpMessage,
+    model::user_op_policy::UserOpPolicyData,
     storage::Storage,
     cache::Cache,
 };

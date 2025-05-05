@@ -55,13 +55,13 @@ where
         while let Some(log) = receiver.recv().await {
             if let Some(event_signature) = log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
-                    println!("✅ Processing Event: {}", event_name);
+                    tracing::info!("✅ Processing Event: {}", event_name);
                     process_event(event_name, &log, &mut previous_log, Arc::clone(&self.app)).await;
                 } else {
-                    println!("⚠️ Unknown event signature: {:?}", event_signature);
+                    tracing::info!("⚠️ Unknown event signature: {:?}", event_signature);
                 }
             } else {
-                println!("⚠️ Log has no topics.");
+                tracing::info!("⚠️ Log has no topics.");
             }
         }
     }
