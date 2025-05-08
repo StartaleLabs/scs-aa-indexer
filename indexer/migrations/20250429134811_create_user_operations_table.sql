@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     deducted_amount NUMERIC,             -- Token or native amount deducted
     usd_amount NUMERIC,                  -- USD equivalent amount (optional if calculated)
 
-
     -- Extended metadata (from PaidGasInTokens / GasBalanceDeducted)
     premium NUMERIC,
     token CHAR(42),
