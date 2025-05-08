@@ -50,9 +50,10 @@ async fn main() {
     let redis = Arc::new(RedisCoordinator::new(&config.storage.redis_url));
 
     // ✅ DB migration
-    MIGRATOR.run(db.get_pg_pool())
-        .await
-        .expect("DB migration failed");
+    MIGRATOR.run(db.get_pg_pool()).await.unwrap_or_else(|e| {
+        eprintln!("❌ DB migration failed: {:?}", e);
+        std::process::exit(1); // Fail fast
+    });
 
     // ✅ Wrap both into shared AppContext
     let app: Arc<_> = Arc::new(AppContext::new(db, redis));

@@ -38,17 +38,17 @@ where
                 let mut token_address = String::new();
 
                 if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
-                    meta.insert("deductedUser".to_string(), json!(event.user));
-                    meta.insert("deductedAmount".to_string(), json!(event.amount));
-                    meta.insert("premium".to_string(), json!(event.premium));
+                    meta.insert("deductedUser".to_string(), json!(event.user.to_string()));
+                    meta.insert("deductedAmount".to_string(), json!(event.amount.to_string()));
+                    meta.insert("premium".to_string(), json!(event.premium.to_string()));
                     paymaster_type = PaymasterMode::SPONSORSHIP;
                 }
 
                 if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
-                    meta.insert("deductedUser".to_string(), json!(event.user));
+                    meta.insert("deductedUser".to_string(), json!(event.user.to_string()));
                     meta.insert("token".to_string(), json!(event.token));
-                    meta.insert("tokenCharge".to_string(), json!(event.tokenCharge));
-                    meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup));
+                    meta.insert("tokenCharge".to_string(), json!(event.tokenCharge.to_string()));
+                    meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup.to_string()));
                     meta.insert("exchangeRate".to_string(), json!(event.exchangeRate));
                     paymaster_type = PaymasterMode::TOKEN;
                     token_address = format!("{:?}", event.token);
@@ -62,7 +62,8 @@ where
                     meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed.to_string()));
 
                     let msg = UserOpMessage {
-                        project_id: None,
+                        owner_id: None,
+                        credential_id: None,
                         paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),

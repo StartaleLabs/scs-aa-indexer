@@ -6,7 +6,8 @@ use crate::model::paymaster_type::PaymasterMode;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOpMessage {
-    pub project_id: Option<String>,
+    pub owner_id: Option<String>,
+    pub credential_id : Option<String>,
     pub paymaster_mode: Option<PaymasterMode>,
     pub paymaster_id: Option<String>,
     pub policy_id: Option<String>,
