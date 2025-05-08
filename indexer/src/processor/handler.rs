@@ -62,7 +62,8 @@ where
                     meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed.to_string()));
 
                     let msg = UserOpMessage {
-                        project_id: None,
+                        owner_id: None,
+                        credential_id: None,
                         paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),
