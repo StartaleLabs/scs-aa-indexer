@@ -67,7 +67,7 @@ impl Storage for TimescaleStorage {
                          actual_gas_cost = $5, actual_gas_used = $6, deducted_user = $7,
                          deducted_amount = $8, usd_amount = $9, token = $10,
                          premium = $11, token_charge = $12, applied_markup = $13, exchange_rate = $14
-                     WHERE chain_id = $16 AND user_op_hash = $15"
+                     WHERE chain_id = $15 AND user_op_hash = $16"
                 )
                 .bind(&status_str)
                 .bind(&paymaster_mode)
@@ -94,14 +94,12 @@ impl Storage for TimescaleStorage {
             } else {
                 let query = sqlx::query(
                     "UPDATE pm_user_operations 
-                     SET org_id = $1, paymaster_mode = $2, paymaster_id = $3, 
-                         data_source = $4, credential_id = $5
-                     WHERE user_op_hash = $6"
+                     SET org_id = $1, paymaster_mode = $2, paymaster_id = $3, credential_id = $4
+                     WHERE user_op_hash = $5"
                 )
-                .bind(&msg.owner_id)
+                .bind(&msg.org_id)
                 .bind(&paymaster_mode)
                 .bind(&msg.paymaster_id)
-                .bind(&msg.data_source)
                 .bind(&msg.credential_id)
                 .bind(user_op_hash);
 
@@ -113,17 +111,18 @@ impl Storage for TimescaleStorage {
         } else {
             let query = sqlx::query(
                 "INSERT INTO pm_user_operations 
-                 (time, user_op_hash, user_operation, org_id, credential_id, paymaster_mode, 
+                 (time, chain_id, user_op_hash, user_operation, org_id, credential_id, paymaster_mode, 
                   fund_type, paymaster_id, status, data_source, 
                   actual_gas_cost, actual_gas_used, deducted_user, deducted_amount, usd_amount, 
                   token, premium, token_charge, applied_markup, exchange_rate, metadata) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                         $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)"
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+                    $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)"
             )
             .bind(&event_time)
+            .bind(&chain_id)
             .bind(&user_op_hash)
             .bind(&msg.user_op)
-            .bind(&msg.owner_id)
+            .bind(&msg.org_id)
             .bind(&msg.credential_id)
             .bind(&paymaster_mode)
             .bind(&msg.fund_type)

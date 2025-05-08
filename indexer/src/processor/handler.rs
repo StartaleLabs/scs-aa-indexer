@@ -62,7 +62,7 @@ where
                     meta.insert("actualGasUsed".to_string(), json!(log.actualGasUsed.to_string()));
 
                     let msg = UserOpMessage {
-                        owner_id: None,
+                        org_id: None,
                         credential_id: None,
                         paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
