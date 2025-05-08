@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS pm_user_operations (
     time TIMESTAMPTZ NOT NULL,               -- Required for Timescale hypertables
 
@@ -6,13 +5,12 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     user_operation JSONB NOT NULL,
     
     -- Ownership and Access
-    owner_id VARCHAR(30),
+    org_id VARCHAR(30),
     credential_id VARCHAR(30),
 
     -- Paymaster Information
     paymaster_mode VARCHAR(20),
     paymaster_id VARCHAR(30),
-    token_address CHAR(42),
     fund_type VARCHAR(20),
 
     -- Status + Source
@@ -26,11 +24,19 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     deducted_amount NUMERIC,             -- Token or native amount deducted
     usd_amount NUMERIC,                  -- USD equivalent amount (optional if calculated)
 
+
+    -- Extended metadata (from PaidGasInTokens / GasBalanceDeducted)
+    premium NUMERIC,
+    token CHAR(42),
+    token_charge NUMERIC,
+    applied_markup NUMERIC,
+    exchange_rate NUMERIC,
+
     -- Original metadata (still useful for extensibility)
     metadata JSONB NOT NULL,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 
