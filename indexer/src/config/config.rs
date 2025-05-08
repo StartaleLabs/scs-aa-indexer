@@ -25,7 +25,7 @@ pub struct GeneralConfig {
 pub struct ChainConfig {
     pub active: bool,
     pub rpc_url: String,
-    pub chain_id: u64,
+    pub chain_id: u32,
     pub block_time: u64,
     pub polling_blocks: u64,
     pub contracts: Vec<ContractConfig>,

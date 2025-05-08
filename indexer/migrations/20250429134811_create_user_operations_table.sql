@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS pm_user_operations (
     time TIMESTAMPTZ NOT NULL,               -- Required for Timescale hypertables
 
+    chain_id INTEGER NOT NULL,               -- Chain ID
+
     user_op_hash CHAR(66) NOT NULL,
     user_operation JSONB NOT NULL,
     
@@ -38,16 +40,22 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- Create hypertable for timeseries data
 SELECT create_hypertable('pm_user_operations', by_range('time'));
 
--- Create indexes for faster querying
-CREATE UNIQUE INDEX idx_user_op_hash
-  ON pm_user_operations(user_op_hash, time);
-
 -- Create hypertable retention policy
 SELECT add_retention_policy('pm_user_operations', drop_after => INTERVAL '1 month');
+
+-- Create indexes for faster querying
+CREATE UNIQUE INDEX idx_user_chain_id_user_op_hash
+  ON pm_user_operations(chain_id, user_op_hash, time);
+
+---- indexes used by dbt
+CREATE INDEX idx_status
+  ON pm_user_operations(status);
+
+CREATE INDEX idx_updated_at
+  ON pm_user_operations(updated_at);
 
 -- Create trigger to set updated_at timestamp on update
 CREATE OR REPLACE FUNCTION trigger_set_updated_at()

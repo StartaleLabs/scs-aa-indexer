@@ -5,8 +5,7 @@ use rdkafka::ClientConfig;
 use rdkafka::message::Message;
 use crate::model::paymaster_type::PaymasterMode;
 use crate::{
-    consumer::kakfa_message::UserOpMessage,
-    model::user_op_policy::UserOpPolicyData,
+    model::{user_op_policy::UserOpPolicyData, user_op::UserOpMessage},
     storage::Storage,
     cache::Cache,
 };

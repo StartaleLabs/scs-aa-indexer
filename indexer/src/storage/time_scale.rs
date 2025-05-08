@@ -4,7 +4,7 @@ use anyhow::Error;
 use async_trait::async_trait;
 use sqlx::PgPool;
 use sqlx::types::Json;
-use crate::{consumer::kakfa_message::{UserOpMessage, Status}, storage::Storage};
+use crate::{model::user_op::{UserOpMessage, Status}, storage::Storage};
 use chrono::{DateTime, Utc};
 
 
@@ -28,6 +28,7 @@ impl TimescaleStorage {
 #[async_trait]
 impl Storage for TimescaleStorage {
     async fn upsert_user_op_message(&self, msg: UserOpMessage) -> Result<(), Error> {
+        let chain_id = msg.chain_id as i32;
         let user_op_hash = msg.user_op_hash.trim();
         let event_time = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
         let status_str = msg.status.to_string();
@@ -66,7 +67,7 @@ impl Storage for TimescaleStorage {
                          actual_gas_cost = $5, actual_gas_used = $6, deducted_user = $7,
                          deducted_amount = $8, usd_amount = $9, token = $10,
                          premium = $11, token_charge = $12, applied_markup = $13, exchange_rate = $14
-                     WHERE user_op_hash = $15"
+                     WHERE chain_id = $16 AND user_op_hash = $15"
                 )
                 .bind(&status_str)
                 .bind(&paymaster_mode)
@@ -82,6 +83,7 @@ impl Storage for TimescaleStorage {
                 .bind(&token_charge)
                 .bind(&applied_markup)
                 .bind(&exchange_rate)
+                .bind(&chain_id)
                 .bind(user_op_hash);
 
                 match query.execute(&self.pool).await {

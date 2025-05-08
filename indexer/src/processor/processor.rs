@@ -1,10 +1,6 @@
 
 use tokio::sync::mpsc;
-use alloy::{
-    rpc::types::Log as RpcLog,
-    primitives::B256,
-};
-
+use alloy::primitives::B256;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -14,7 +10,11 @@ use crate::{
     config::config::Config, 
     processor::handler::process_event
 };
-use crate::{storage::Storage, cache::Cache};
+use crate::{
+    storage::Storage,
+    cache::Cache,
+    model::event::Event,
+};
 
 pub struct ProcessEvent<S, C> 
 where
@@ -49,14 +49,14 @@ where
     }
 
     // **Process Incoming Logs Dynamically**
-    pub async fn process(&self, mut receiver: mpsc::Receiver<RpcLog>) {
-        let mut previous_log: Option<RpcLog> = None;
+    pub async fn process(&self, mut receiver: mpsc::Receiver<Event>) {
+        let mut previous_event: Option<Event> = None;
 
-        while let Some(log) = receiver.recv().await {
-            if let Some(event_signature) = log.topics().first() {
+        while let Some(event) = receiver.recv().await {
+            if let Some(event_signature) = event.log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
                     tracing::info!("✅ Processing Event: {}", event_name);
-                    process_event(event_name, &log, &mut previous_log, Arc::clone(&self.app)).await;
+                    process_event(event_name, &event, &mut previous_event, Arc::clone(&self.app)).await;
                 } else {
                     tracing::info!("⚠️ Unknown event signature: {:?}", event_signature);
                 }
