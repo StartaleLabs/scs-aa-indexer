@@ -6,7 +6,10 @@ mod consumer;
 mod app;
 mod cache;
 mod model;
+use std::future::Future;
+use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
+use futures_util::FutureExt;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use tracing_subscriber;
@@ -21,6 +24,17 @@ use storage::time_scale::TimescaleStorage;
 use cache::redis::RedisCoordinator;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+
+fn spawn_safe<F>(fut: F)
+where
+    F: Future<Output = ()> + Send + 'static,
+{
+    tokio::spawn(async move {
+        if let Err(err) = AssertUnwindSafe(fut).catch_unwind().await {
+            eprintln!("🚨 A task panicked: {:?}", err);
+        }
+    });
+}
 
 #[tokio::main]
 async fn main() {
@@ -46,12 +60,18 @@ async fn main() {
     let indexer_app = Arc::clone(&app);
 
     // ✅ Start Kafka consumer
-    start_kafka_consumer(
-        &config.storage.kafka_broker,
-        &config.storage.kafka_topics[0],
-        &config.storage.kafka_group_id,
-        kafka_app,
-    );
+    // ✅ Kafka Consumer
+    let kafka_group_id = config.storage.kafka_group_id.clone();
+    let kafka_topics = config.storage.kafka_topics.clone();
+    let kafka_broker = config.storage.kafka_broker.clone();
+    spawn_safe(async move {
+        start_kafka_consumer(
+            &kafka_broker,
+            &kafka_topics[0],
+            &kafka_group_id,
+            kafka_app,
+        );
+    });
 
     // ✅ Spawn per-chain listeners
     for (chain_name, chain) in config.chains.clone() {
@@ -60,26 +80,38 @@ async fn main() {
             let poll_interval = chain.block_time * chain.polling_blocks;
             let log_sender = log_sender.clone();
             let chain_clone = chain.clone();
+            let chain_name_clone = chain_name.clone();
 
-            tokio::spawn(async move {
-                let event_listener = EventListener::new(&rpc_url).await;
-
+            spawn_safe(async move {
+                // this loop ensures the listener restarts if it panics
                 loop {
-                    println!("🔍 Listening for events on {}...", chain_name);
-                    event_listener.listen_events(&chain_clone, log_sender.clone()).await;
-                    sleep(Duration::from_secs(poll_interval)).await;
+                    let result = AssertUnwindSafe(async {
+                        let event_listener = EventListener::new(&rpc_url).await;
+                        loop {
+                            println!("🔍 Listening for events on {}...", chain_name_clone);
+                            event_listener.listen_events(&chain_clone, log_sender.clone()).await;
+                            sleep(Duration::from_secs(poll_interval)).await;
+                        }
+                    })
+                    .catch_unwind()
+                    .await;
+            
+                    if let Err(err) = result {
+                        eprintln!("🔥 Chain listener for {} panicked, restarting... {:?}", chain_name_clone, err);
+                        sleep(Duration::from_secs(5)).await;
+                    }
                 }
-            });
+            });            
         }
     }
 
-    // ✅ Process logs
-    tokio::spawn(async move {
+    // ✅ Log processing
+    spawn_safe(async move {
         let event_processor = ProcessEvent::new(&config, indexer_app);
         event_processor.process(log_receiver).await;
     });
 
-    // ✅ Keep alive
+    // ✅ Main keep-alive loop
     loop {
         sleep(Duration::from_secs(3600)).await;
     }
