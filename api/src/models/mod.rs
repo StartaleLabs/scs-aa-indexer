@@ -9,7 +9,7 @@ pub struct UserOperationRecord {
     pub user_op_hash: String,
     pub user_operation: Option<serde_json::Value>,
     pub paymaster_id: Option<String>,
-    pub owner_id: Option<String>,
+    pub org_id: Option<String>,
     pub paymaster_mode: Option<String>,
     pub data_source: Option<String>,
     pub status: String,
