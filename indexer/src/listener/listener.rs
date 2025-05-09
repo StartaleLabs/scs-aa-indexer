@@ -2,13 +2,16 @@ use alloy::{
     network::Ethereum,
     primitives::{Address, B256},
     providers::{Provider, RootProvider},
-    rpc::{client::RpcClient, types::{Filter, Log}},
+    rpc::{client::RpcClient, types::Filter},
     transports::http::Http,
 };
 use std::str::FromStr;
 use tokio::sync::mpsc;
 use url::Url;
-use crate::config::config::ChainConfig;
+use crate::{
+    config::config::ChainConfig,
+    model::event::Event,
+};
 
 /// **EventListener Struct**
 pub struct EventListener {
@@ -32,7 +35,7 @@ impl EventListener {
         Self { provider }
     }
 
-    pub async fn listen_events(&self, chain_config: &ChainConfig, sender: mpsc::Sender<Log>) {
+    pub async fn listen_events(&self, chain_config: &ChainConfig, sender: mpsc::Sender<Event>) {
        if !chain_config.active {
            return;
        }
@@ -66,8 +69,11 @@ impl EventListener {
         match self.provider.get_logs(&filter).await {
             Ok(logs) => {
                 for log in logs {
-                    tracing::debug!("Log: {:?}", log);
-                    if sender.send(log).await.is_err() {
+                    tracing::debug!("ChainID: {}, Log: {:?}", chain_config.chain_id, log);
+                    if sender.send(Event {
+                        chain_id: chain_config.chain_id,
+                        log,
+                    }).await.is_err() {
                         tracing::error!("Failed to send log to channel");
                     }
                 }

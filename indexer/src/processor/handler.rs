@@ -1,89 +1,89 @@
 use std::sync::Arc;
 
 use alloy_sol_types::SolEvent;
-use alloy::{
-    primitives::Log as AlloyLog,
-    rpc::types::Log as RpcLog,
-};
+use alloy::primitives::Log as AlloyLog;
 use chrono::Utc;
 use indexer::events::events::{
     GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
 };
 use serde_json::json;
-use crate::{app::AppContext, cache::Cache, consumer::kakfa_message::{Status, UserOpMessage}, model::{paymaster_type::PaymasterMode, user_op_policy::UserOpPolicyData}, storage::Storage};
+use crate::{
+    app::AppContext, cache::Cache, model::user_op::{Status, UserOpMessage}, model::{paymaster_type::PaymasterMode, user_op_policy::UserOpPolicyData}, storage::Storage,
+    model::event::Event,
+};
 
 // **Process a log based on the event name**
 pub async fn process_event<S, C>(
     event_name: &str,
-    log: &RpcLog,
-    previous_log: &mut Option<RpcLog>,
+    event: &Event,
+    previous_event: &mut Option<Event>,
     app: Arc<AppContext<S, C>>,
 )
 where
     S: Storage + Send + Sync + 'static,
     C: Cache + Send + Sync + 'static,
 {   
-    let alloy_log = AlloyLog::from(log.clone());
+    let alloy_log = AlloyLog::from(event.log.clone());
     match event_name {
         "GasBalanceDeducted" | "PaidGasInTokens" => {
             // Store this log to be paired with the next UserOperationEvent
-            *previous_log = Some(log.clone());
+            *previous_event = Some(event.clone());
         }
         "UserOperationEvent" => {
-            if let Some(prev_log) = previous_log.take() {
-                let prev_log = AlloyLog::from(prev_log.clone());
+            if let Some(prev_event) = previous_event.take() {
+                let prev_log = AlloyLog::from(prev_event.log);
 
                 let mut meta = serde_json::Map::new();
                 let mut paymaster_type = PaymasterMode::UNKNOWN;
                 let mut token_address = String::new();
 
-                if let Ok(event) = GasBalanceDeducted::decode_log(&prev_log, true) {
-                    meta.insert("deductedUser".to_string(), json!(event.user.to_string()));
-                    meta.insert("deductedAmount".to_string(), json!(event.amount.to_string()));
-                    meta.insert("premium".to_string(), json!(event.premium.to_string()));
+                if let Ok(log) = GasBalanceDeducted::decode_log(&prev_log, true) {
+                    meta.insert("deductedUser".to_string(), json!(log.user.to_string()));
+                    meta.insert("deductedAmount".to_string(), json!(log.amount.to_string()));
+                    meta.insert("premium".to_string(), json!(log.premium.to_string()));
                     paymaster_type = PaymasterMode::SPONSORSHIP;
                 }
 
-                if let Ok(event) = PaidGasInTokens::decode_log(&prev_log, true) {
-                    meta.insert("deductedUser".to_string(), json!(event.user.to_string()));
-                    meta.insert("token".to_string(), json!(event.token));
-                    meta.insert("tokenCharge".to_string(), json!(event.tokenCharge.to_string()));
-                    meta.insert("appliedMarkup".to_string(), json!(event.appliedMarkup.to_string()));
-                    meta.insert("exchangeRate".to_string(), json!(event.exchangeRate));
+                if let Ok(log) = PaidGasInTokens::decode_log(&prev_log, true) {
+                    meta.insert("deductedUser".to_string(), json!(log.user.to_string()));
+                    meta.insert("token".to_string(), json!(log.token));
+                    meta.insert("tokenCharge".to_string(), json!(log.tokenCharge.to_string()));
+                    meta.insert("appliedMarkup".to_string(), json!(log.appliedMarkup.to_string()));
+                    meta.insert("exchangeRate".to_string(), json!(log.exchangeRate));
                     paymaster_type = PaymasterMode::TOKEN;
-                    token_address = format!("{:?}", event.token);
+                    token_address = format!("{:?}", log.token);
                 }
 
-                let user_op_log = AlloyLog::from(log.clone());
+                let user_op_log = AlloyLog::from(event.log.clone());
                 tracing::info!("✅ Matched UserOperationEvent for previous event");
 
-                if let Ok(event) = UserOperationEvent::decode_log(&user_op_log, false) {
-                    meta.insert("actualGasCost".to_string(), json!(event.actualGasCost.to_string()));
-                    meta.insert("actualGasUsed".to_string(), json!(event.actualGasUsed.to_string()));
+                if let Ok(log) = UserOperationEvent::decode_log(&user_op_log, false) {
+                    meta.insert("actualGasCost".to_string(), json!(log.actualGasCost.to_string()));
+                    meta.insert("actualGasUsed".to_string(), json!(log.actualGasUsed.to_string()));
 
                     let msg = UserOpMessage {
-                        owner_id: None,
+                        org_id: None,
                         credential_id: None,
                         paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),
                         fund_type: None,
-                        chain_id: None,
+                        chain_id: event.chain_id,
                         policy_id: None,
                         native_usd_price: None,
                         enabled_limits: None,
-                        status: if event.success {
+                        status: if log.success {
                             Status::Success
                         } else {
                             Status::Failed
                         },
-                        user_op_hash: format!("{:?}", event.userOpHash),
+                        user_op_hash: format!("{:?}", log.userOpHash),
                         data_source: Some("Indexer".to_string()),
                         timestamp: Utc::now().to_rfc3339(),
                         user_op: json!({
-                            "sender": format!("{:?}", event.sender),
-                            "paymaster": format!("{:?}", event.paymaster),
-                            "nonce": event.nonce.to_string(),
+                            "sender": format!("{:?}", log.sender),
+                            "paymaster": format!("{:?}", log.paymaster),
+                            "nonce": log.nonce.to_string(),
                         }),
                         meta_data: Some(json!(meta)),
                     };
@@ -92,8 +92,8 @@ where
                         let redis_payload = UserOpPolicyData {
                             policy_id: None,
                             native_usd_price: None,
-                            actual_gas_cost: Some(event.actualGasCost.to_string()),
-                            actual_gas_used: Some(event.actualGasUsed.to_string()),
+                            actual_gas_cost: Some(log.actualGasCost.to_string()),
+                            actual_gas_used: Some(log.actualGasUsed.to_string()),
                             sender: None,
                             enabled_limits: None, 
                         };

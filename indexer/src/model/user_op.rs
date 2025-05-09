@@ -1,19 +1,19 @@
 use derive_more::derive::Display;
 use serde::{Deserialize, Serialize};
 
-use crate::model::paymaster_type::PaymasterMode;
+use super::paymaster_type::PaymasterMode;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOpMessage {
-    pub owner_id: Option<String>,
+    pub org_id: Option<String>,
     pub credential_id : Option<String>,
     pub paymaster_mode: Option<PaymasterMode>,
     pub paymaster_id: Option<String>,
     pub policy_id: Option<String>,
     pub token_address: Option<String>,
     pub fund_type: Option<String>,
-    pub chain_id: Option<String>,
+    pub chain_id: u32,
     pub status: Status,
     pub data_source: Option<String>,
     pub timestamp: String,
