@@ -21,8 +21,6 @@ pub fn parse_gas_value(val: Option<&String>) -> u64 {
     }
 }
 
-
-
 pub fn extract_meta_fields(meta: &serde_json::Map<String, Value>) -> (
     Option<i64>,               // actualGasCost
     Option<i64>,               // actualGasUsed

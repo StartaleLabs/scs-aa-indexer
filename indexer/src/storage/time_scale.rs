@@ -60,18 +60,15 @@ impl Storage for TimescaleStorage {
             .as_deref()
             .and_then(|s| BigDecimal::from_str(s).ok())
             .or(db_native_price);
-        println!("native_price {}", native_price.clone().unwrap_or_default());
 
         let actual_gas_cost_str = actual_gas_cost_str
             .or_else(|| db_actual_gas_cost.map(|v| v.to_string()))
             .unwrap_or_default();
-        println!("actual_gas_cost_str {}", actual_gas_cost_str);
 
         // Step 4: Backfill msg.native_usd_price if needed
         if msg.native_usd_price.is_none() {
             msg.native_usd_price = native_price.as_ref().map(|v| format!("{:.6}", v));
         }
-        println!("msg.native_usd_price {}", msg.native_usd_price.clone().unwrap_or_default());
 
         // Step 5: Inject usdAmount into metadata if possible
         let usd_amount_to_store = if let (Some(price), true) = (native_price.clone(), !actual_gas_cost_str.is_empty()) {
@@ -86,8 +83,6 @@ impl Storage for TimescaleStorage {
         } else {
             None
         };
-
-        println!("usd_amount_to_store {}", usd_amount_to_store.clone().unwrap_or_default());
 
         // Step 6: Extract all metadata fields
         let (

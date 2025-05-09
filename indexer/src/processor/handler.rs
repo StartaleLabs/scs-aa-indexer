@@ -11,7 +11,6 @@ use crate::{
     app::AppContext, cache::Cache, model::user_op::{Status, UserOpMessage}, model::{paymaster_type::PaymasterMode, user_op_policy::UserOpPolicyData}, storage::Storage,
     model::event::Event,
 };
-use crate::utils::calculate_usd_spent;
 
 // **Process a log based on the event name**
 pub async fn process_event<S, C>(
@@ -62,7 +61,7 @@ where
                     meta.insert("actualGasCost".to_string(), json!(log.actualGasCost.to_string()));
                     meta.insert("actualGasUsed".to_string(), json!(log.actualGasUsed.to_string()));
 
-                    let mut msg = UserOpMessage {
+                    let msg = UserOpMessage {
                         org_id: None,
                         credential_id: None,
                         paymaster_mode: Some(paymaster_type.clone()),
