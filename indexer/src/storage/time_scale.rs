@@ -2,12 +2,11 @@
 
 use anyhow::Error;
 use async_trait::async_trait;
-use serde_json::json;
 use sqlx::{types::BigDecimal, PgPool};
 use sqlx::types::Json;
 use crate::{model::user_op::{UserOpMessage, Status}, storage::Storage};
 use chrono::{DateTime, Utc};
-use crate::utils::{calculate_usd_spent, extract_meta_fields};
+use crate::utils::{calculate_usd_amount_to_store, extract_meta_fields};
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -39,61 +38,58 @@ impl Storage for TimescaleStorage {
         tracing::info!("🟢 Upserting UserOpMessage with hash: {}", user_op_hash);
         tracing::debug!("- useropmessage: {}", serde_json::to_string(&msg).unwrap_or_default());
 
-        // Step 1: Extract actualGasCost from metadata (as String)
-        let actual_gas_cost_str = msg.meta_data
+        // Step 1: Extract actualGasCost from metadata (as string)
+        let mut actual_gas_cost_str = msg.meta_data
             .as_ref()
             .and_then(|m| m.get("actualGasCost"))
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
-        // Step 2: Query existing native_usd_price + actual_gas_cost from DB if needed
-        let (db_native_price, db_actual_gas_cost): (Option<BigDecimal>, Option<i64>) = sqlx::query_as(
-            "SELECT native_usd_price, actual_gas_cost FROM pm_user_operations WHERE user_op_hash = $1"
-        )
-        .bind(&user_op_hash)
-        .fetch_optional(&self.pool)
-        .await?
-        .unwrap_or((None, None));
+        // Step 2: Conditionally query DB for fallback values
+        let (db_native_price, db_actual_gas_cost): (Option<BigDecimal>, Option<i64>) = 
+            if msg.native_usd_price.is_none() || actual_gas_cost_str.is_none() {
+                sqlx::query_as(
+                    "SELECT native_usd_price, actual_gas_cost FROM pm_user_operations WHERE user_op_hash = $1"
+                )
+                .bind(&user_op_hash)
+                .fetch_optional(&self.pool)
+                .await?
+                .unwrap_or((None, None))
+            } else {
+                (None, None)
+            };
 
-        // Step 3: Merge fallback values if needed
+        // Step 3: Merge native_price and gas_cost fallback values
         let native_price = msg.native_usd_price
             .as_deref()
             .and_then(|s| BigDecimal::from_str(s).ok())
             .or(db_native_price);
 
-        let actual_gas_cost_str = actual_gas_cost_str
-            .or_else(|| db_actual_gas_cost.map(|v| v.to_string()))
-            .unwrap_or_default();
+        if actual_gas_cost_str.is_none() {
+            actual_gas_cost_str = db_actual_gas_cost.map(|v| v.to_string());
+        }
 
-        // Step 4: Backfill msg.native_usd_price if needed
         if msg.native_usd_price.is_none() {
             msg.native_usd_price = native_price.as_ref().map(|v| format!("{:.6}", v));
         }
 
-        // Step 5: Inject usdAmount into metadata if possible
-        let usd_amount_to_store = if let (Some(price), true) = (native_price.clone(), !actual_gas_cost_str.is_empty()) {
-            if let Some(usd) = calculate_usd_spent(&actual_gas_cost_str, &price.to_string()) {
-                if let Some(meta_map) = msg.meta_data.as_mut().and_then(|v| v.as_object_mut()) {
-                    meta_map.insert("usdAmount".to_string(), json!(format!("{:.6}", usd)));
-                }
-                Some(BigDecimal::from_str(&format!("{:.6}", usd))?)
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        // Step 4: Calculate USD amount and inject into metadata
+        let usd_amount_to_store = calculate_usd_amount_to_store(
+            native_price.clone(),
+            actual_gas_cost_str.as_deref().unwrap_or(""),
+            &mut msg.meta_data
+        );
 
-        // Step 6: Extract all metadata fields
+        // Step 5: Extract all metadata fields
         let (
-            actual_gas_cost, actual_gas_used, deducted_user, deducted_amount, _,
+            actual_gas_cost, actual_gas_used, deducted_user, deducted_amount,
             token, premium, token_charge, applied_markup, exchange_rate
         ) = msg.meta_data
             .as_ref()
             .and_then(|v| v.as_object())
-            .map_or((None, None, None, None, None, None, None, None, None, None), |m| extract_meta_fields(m));
+            .map_or((None, None, None, None, None, None, None, None, None), |m| extract_meta_fields(m));
 
-        // Step 7: Check if record exists
+        // Step 6: Check if record exists and update or insert
         let existing: Option<String> = sqlx::query_scalar(
             "SELECT status FROM pm_user_operations WHERE user_op_hash = $1"
         )
@@ -190,3 +186,4 @@ impl Storage for TimescaleStorage {
         Ok(())
     }
 }
+

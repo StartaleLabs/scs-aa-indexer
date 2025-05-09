@@ -1,7 +1,8 @@
 use sqlx::types::BigDecimal;
 use std::str::FromStr;
-use serde_json::Value;
+use serde_json::{json, Value};
 
+// Converts gas cost string + native token USD price into a `f64` USD amount
 pub fn calculate_usd_spent(actual_gas_cost: &str, native_usd_price: &str) -> Option<f64> {
     let cost_wei = if actual_gas_cost.starts_with("0x") {
         u64::from_str_radix(actual_gas_cost.trim_start_matches("0x"), 16).ok()? as f64
@@ -26,7 +27,6 @@ pub fn extract_meta_fields(meta: &serde_json::Map<String, Value>) -> (
     Option<i64>,               // actualGasUsed
     Option<String>,            // deductedUser
     Option<BigDecimal>,        // deductedAmount
-    Option<BigDecimal>,        // usdAmount
     Option<String>,            // token
     Option<BigDecimal>,        // premium
     Option<BigDecimal>,        // tokenCharge
@@ -43,11 +43,26 @@ pub fn extract_meta_fields(meta: &serde_json::Map<String, Value>) -> (
         parse_i64("actualGasUsed"),
         parse_str("deductedUser"),
         parse_decimal("deductedAmount"),
-        parse_decimal("usdAmount"),
         parse_str("token"),
         parse_decimal("premium"),
         parse_decimal("tokenCharge"),
         parse_decimal("appliedMarkup"),
         parse_decimal("exchangeRate"),
     )
+}
+// Injects formatted USD amount into metadata and returns as BigDecimal (for Timescale use)
+pub fn calculate_usd_amount_to_store(
+    native_price: Option<BigDecimal>,
+    actual_gas_cost_str: &str,
+    meta_data: &mut Option<serde_json::Value>
+) -> Option<BigDecimal> {
+    if let (Some(price), true) = (native_price.clone(), !actual_gas_cost_str.is_empty()) {
+        if let Some(usd) = calculate_usd_spent(actual_gas_cost_str, &price.to_string()) {
+            if let Some(meta_map) = meta_data.as_mut().and_then(|v| v.as_object_mut()) {
+                meta_map.insert("usdAmount".to_string(), json!(format!("{:.6}", usd)));
+            }
+            return BigDecimal::from_str(&format!("{:.6}", usd)).ok();
+        }
+    }
+    None
 }
