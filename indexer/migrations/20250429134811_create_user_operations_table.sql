@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     actual_gas_used BIGINT,              -- Gas used
     deducted_amount NUMERIC,             -- Token or native amount deducted
     usd_amount NUMERIC,                  -- USD equivalent amount (optional if calculated)
+    native_usd_price NUMERIC,            -- USD price of native token (optional if calculated)
 
     -- Extended metadata (from PaidGasInTokens / GasBalanceDeducted)
     premium NUMERIC,
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     token_charge NUMERIC,
     applied_markup NUMERIC,
     exchange_rate NUMERIC,
+
 
     -- Original metadata (still useful for extensibility)
     metadata JSONB NOT NULL,

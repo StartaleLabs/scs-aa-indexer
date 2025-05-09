@@ -14,7 +14,7 @@ serde = { version = "1.0", features = ["derive"] }  # Serialization
 dotenv = "0.15" # Environment variables
 log = "0.4" # Logging
 env_logger = "0.10" # Logger initialization
-sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "json", "chrono"] } # Database
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "json", "chrono", "bigdecimal"] } # Database
 redis = { version = "0.23", features = ["tokio-comp", "tokio-native-tls-comp"] } # Caching
 opensearch = "2.3.0" # OpenSearch indexing
 warp = "0.3" # Web API (REST/GraphQL)
@@ -36,6 +36,7 @@ anyhow = "1.0.97"
 chrono = "0.4.40"
 tracing = "0.1.41"
 tracing-subscriber = "0.3"
+bigdecimal = "0.4.8"
 
 [dev-dependencies]
 tokio-test = "0.4"
