@@ -6,6 +6,7 @@ mod consumer;
 mod app;
 mod cache;
 mod model;
+mod utils;
 use std::future::Future;
 use std::panic::AssertUnwindSafe;
 use std::sync::Arc;

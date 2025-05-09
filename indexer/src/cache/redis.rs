@@ -4,6 +4,7 @@ use crate::model::user_op_policy::UserOpPolicyData;
 use crate::cache::Cache;
 use anyhow::Error;
 use async_trait::async_trait;
+use crate::utils::{calculate_usd_spent, parse_gas_value};
 
 pub struct RedisCoordinator {
     redis: redis::Client,
@@ -17,7 +18,7 @@ impl RedisCoordinator {
 }
 
 #[async_trait]
-impl Cache for RedisCoordinator {
+impl Cache for RedisCoordinator {   
     async fn update_userop_policy(
         &self,
         user_op_hash: &str,
@@ -89,35 +90,11 @@ impl RedisCoordinator {
     
         let policy_id = data.policy_id.as_ref().unwrap();
         let usd_price_str = data.native_usd_price.as_ref().unwrap();
-        let usd_price = match usd_price_str.parse::<f64>() {
-            Ok(val) => val,
-            Err(_) => {
-                tracing::error!("❌ Failed to parse native_usd_price: {:?}", usd_price_str);
-                return Ok(());
-            }
-        };
-    
         let actual_gas_cost_str = data.actual_gas_cost.as_ref().unwrap();
-        let cost_wei: f64 = match actual_gas_cost_str {
-            s if s.starts_with("0x") => {
-                u64::from_str_radix(s.trim_start_matches("0x"), 16)
-                    .map(|v| v as f64)
-                    .map_err(|e| e.to_string())
-            }
-            s => s.parse::<f64>().map_err(|e| e.to_string()),
-        }
-        .unwrap_or(0.0);
-    
-        let gas: u64 = match data.actual_gas_used.as_ref() {
-            Some(val) if val.starts_with("0x") => {
-                u64::from_str_radix(val.trim_start_matches("0x"), 16).unwrap_or(0)
-            }
-            Some(val) => val.parse::<u64>().unwrap_or(0),
-            None => 0,
-        };
-    
-        let usd_spent = cost_wei * usd_price / 1e18;
-        
+
+        let usd_spent = calculate_usd_spent(actual_gas_cost_str, usd_price_str).unwrap_or(0.0);
+        let gas = parse_gas_value(data.actual_gas_used.as_ref());
+
         let mut pipe = redis::pipe();
     
         if enabled.contains(&"GLOBAL".to_string()) {
@@ -144,5 +121,4 @@ impl RedisCoordinator {
         tracing::info!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())
     }
-    
 }
