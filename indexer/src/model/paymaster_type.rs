@@ -21,3 +21,16 @@ impl ToString for PaymasterMode {
         }
     }
 }
+
+impl PaymasterMode {
+
+    // create a function to take paymastermode and return fundtype
+    pub fn to_fund_type(&self) -> String {
+        match self {
+            PaymasterMode::SponsorshipPrepaid => "SELF".to_string(),
+            PaymasterMode::SponsorshipPostpaid => "MANAGED".to_string(),
+            PaymasterMode::Token => "USER_PAID".to_string(),
+            PaymasterMode::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}

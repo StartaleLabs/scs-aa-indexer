@@ -71,7 +71,7 @@ where
                         paymaster_mode: Some(paymaster_type.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),
-                        fund_type: None,
+                        fund_type: Some(paymaster_type.to_fund_type()),
                         chain_id: event.chain_id,
                         policy_id: None,
                         native_usd_price: None,
