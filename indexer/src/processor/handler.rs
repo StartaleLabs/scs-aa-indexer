@@ -49,7 +49,7 @@ where
                     meta.insert("token".to_string(), json!(log.token));
                     meta.insert("tokenCharge".to_string(), json!(log.tokenCharge.to_string()));
                     meta.insert("appliedMarkup".to_string(), json!(log.appliedMarkup.to_string()));
-                    meta.insert("exchangeRate".to_string(), json!(log.exchangeRate));
+                    meta.insert("exchangeRate".to_string(), json!(log.exchangeRate.to_string()));
                     paymaster_type = PaymasterMode::TOKEN;
                     token_address = format!("{:?}", log.token);
                 }

@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use sqlx::{types::BigDecimal, PgPool};
 use crate::{model::user_op::{UserOpMessage, Status, UserOperationRecord}, storage::Storage};
 use chrono::{DateTime, Utc};
-use crate::utils::{calculate_usd_amount_to_store, extract_meta_fields};
+use crate::utils::{calculate_usd_spent, extract_meta_fields};
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -66,11 +66,10 @@ impl Storage for TimescaleStorage {
             msg.native_usd_price = native_price.as_ref().map(|v| format!("{:.6}", v));
         }
 
-        let usd_amount_to_store = calculate_usd_amount_to_store(
-            native_price.clone(),
-            actual_gas_cost_str.as_deref().unwrap_or(""),
-            &mut msg.meta_data,
-        );
+        let usd_amount_to_store = calculate_usd_spent(
+            native_price.as_ref().map(|v| v.to_string()).as_deref().unwrap_or(""),
+            actual_gas_cost_str.as_deref().unwrap_or("")
+        ).and_then(|s| BigDecimal::from_str(&s.to_string()).ok());
 
         let (
             actual_gas_cost, actual_gas_used, deducted_user, deducted_amount,
