@@ -10,12 +10,19 @@ polling_blocks= 5
 active= true
 
 [[chains.minato.contracts]]
-name = "Sponsership_Paymaster"
+name = "Sponsership_Pre_Paymaster"
 address = "0x20E8677aCB27BC0dC3BCA61f981324560cB77066"
 events = [
     { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
     { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
     { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
+]
+
+[[chains.minato.contracts]]
+name = "Sponsership_Post_Paymaster"
+address = "0x159dd1e396b655b683603ca6eaa7e78708c0f6af"
+events = [
+    { signature = "a329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
 ]
 
 [[chains.minato.contracts]]
