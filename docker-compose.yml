@@ -39,20 +39,20 @@ services:
     volumes:
       - ./indexer/config:/config
 
-  # api:
-    # build:
-      # context: .
-      # dockerfile: Dockerfile
-      # args:
-        # SERVICE: api
-    # container_name: scs-aa-api
-    # depends_on:
-      # - timescaledb
-    # networks:
-      # - scs-shared-network
-    # environment:
-      # TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
-      # API_HOST: 0.0.0.0
-      # API_PORT: 8081
-    # ports:
-      # - "8081:8081"
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: api
+    container_name: scs-aa-api
+    depends_on:
+      - timescaledb
+    networks:
+      - scs-shared-network
+    environment:
+      TIMESCALE_DB_URL: postgres://tsdbadmin:tspassword@timescaledb:5432/timescaledb
+      API_HOST: 0.0.0.0
+      API_PORT: 8081
+    ports:
+      - "8081:8081"
