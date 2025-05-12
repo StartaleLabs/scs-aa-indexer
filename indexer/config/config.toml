@@ -20,14 +20,14 @@ events = [
 
 [[chains.minato.contracts]]
 name = "Sponsorship_Post_Paymaster"
-address = "0x159dd1e396b655b683603ca6eaa7e78708c0f6af"
+address = "0x20E8677aCB27BC0dC3BCA61f981324560cB77066"
 events = [
     { signature = "0xa329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
 ]
 
 [[chains.minato.contracts]]
 name = "Token Paymaster"
-address = "0x9c1B42ECaC817D50ca93c8fA5A60cE0F5374595A"
+address = "0xcEf7da45a09B17D77e33FC32e5D24Ef1D30B68E3"
 events = [
     { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
 ]
