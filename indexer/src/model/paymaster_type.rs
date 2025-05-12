@@ -3,10 +3,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[derive(sqlx::Type)]
-#[sqlx(type_name = "paymaster_mode", rename_all = "UPPERCASE")]
+#[sqlx(type_name = "paymaster_mode")]
 pub enum PaymasterMode {
+    #[serde(rename = "SPONSORSHIP_PREPAID")]
     SponsorshipPrepaid,
+    #[serde(rename = "SPONSORSHIP_POSTPAID")]
     SponsorshipPostpaid,
+    #[serde(rename = "TOKEN")]
     Token,
     Unknown,
 }
