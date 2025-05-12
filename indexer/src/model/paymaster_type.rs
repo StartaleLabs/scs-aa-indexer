@@ -23,8 +23,6 @@ impl ToString for PaymasterMode {
 }
 
 impl PaymasterMode {
-
-    // create a function to take paymastermode and return fundtype
     pub fn to_fund_type(&self) -> String {
         match self {
             PaymasterMode::SponsorshipPrepaid => "SELF_FUNDED".to_string(),
