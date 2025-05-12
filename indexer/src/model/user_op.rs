@@ -1,5 +1,6 @@
 use derive_more::derive::Display;
 use serde::{Deserialize, Serialize};
+use sqlx::{types::BigDecimal, FromRow};
 
 use super::paymaster_type::PaymasterMode;
 
@@ -31,6 +32,14 @@ pub enum Status {
     Eligible,
     #[serde(other)]
     Unknown,
+}
+
+#[derive(Debug, FromRow)]
+pub struct UserOperationRecord {
+    pub status: Option<String>,
+    pub native_usd_price: Option<BigDecimal>,
+    pub actual_gas_cost: Option<i64>,
+    pub usd_amount: Option<BigDecimal>,
 }
 
 impl Status {
