@@ -129,9 +129,9 @@ impl Storage for TimescaleStorage {
                 sqlx::query(
                     "UPDATE pm_user_operations
                     SET org_id = COALESCE(org_id, $1),
-                        paymaster_mode = $2,
-                        paymaster_id = $3,
-                        credential_id = $4,
+                        paymaster_mode = COALESCE(paymaster_mode,$2),
+                        paymaster_id = COALESCE(paymaster_id, $3),
+                        credential_id = COALESCE(credential_id, $4),
                         metadata = metadata || $5::jsonb,
                         usd_amount = COALESCE(usd_amount, $6),
                         native_usd_price = COALESCE(native_usd_price, $7),
