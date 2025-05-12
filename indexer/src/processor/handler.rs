@@ -25,7 +25,7 @@ where
 {   
     let alloy_log = AlloyLog::from(event.log.clone());
     match event_name {
-        "GasBalanceDeducted" | "PaidGasInTokens | UserOperationSponsoredForPostpaid" => {
+        "GasBalanceDeducted" | "PaidGasInTokens" | "UserOperationSponsoredForPostpaid" => {
             // Store this log to be paired with the next UserOperationEvent
             *previous_event = Some(event.clone());
         }
