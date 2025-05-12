@@ -8,7 +8,7 @@ use indexer::events::events::{
 };
 use serde_json::json;
 use crate::{
-    app::AppContext, cache::Cache, model::user_op::{Status, UserOpMessage}, model::{paymaster_type::PaymasterMode, user_op_policy::UserOpPolicyData}, storage::Storage,
+    app::AppContext, cache::Cache, model::user_op::{Status, UserOpMessage}, model::{paymaster_mode::PaymasterMode, fund_type::FundType, user_op_policy::UserOpPolicyData}, storage::Storage,
     model::event::Event,
 };
 
@@ -34,18 +34,21 @@ where
                 let prev_log = AlloyLog::from(prev_event.log);
 
                 let mut meta = serde_json::Map::new();
-                let mut paymaster_type = PaymasterMode::Unknown;
+                let mut paymaster_mode = PaymasterMode::Unknown;
+                let mut fund_type = FundType::Unknown;
                 let mut token_address = String::new();
 
                 if let Ok(log) = GasBalanceDeducted::decode_log(&prev_log, true) {
                     meta.insert("deductedUser".to_string(), json!(log.user.to_string()));
                     meta.insert("deductedAmount".to_string(), json!(log.amount.to_string()));
                     meta.insert("premium".to_string(), json!(log.premium.to_string()));
-                    paymaster_type = PaymasterMode::SponsorshipPrepaid;
+                    paymaster_mode = PaymasterMode::Sponsorship;
+                    fund_type = FundType::SelfFunded;
                 }
 
                 if let Ok(_) = UserOperationSponsoredForPostpaid::decode_log(&prev_log, true) {
-                    paymaster_type = PaymasterMode::SponsorshipPostpaid;
+                    paymaster_mode = PaymasterMode::Sponsorship;
+                    fund_type = FundType::Managed;
                 }
 
                 if let Ok(log) = PaidGasInTokens::decode_log(&prev_log, true) {
@@ -54,7 +57,8 @@ where
                     meta.insert("tokenCharge".to_string(), json!(log.tokenCharge.to_string()));
                     meta.insert("appliedMarkup".to_string(), json!(log.appliedMarkup.to_string()));
                     meta.insert("exchangeRate".to_string(), json!(log.exchangeRate.to_string()));
-                    paymaster_type = PaymasterMode::Token;
+                    paymaster_mode = PaymasterMode::Token;
+                    fund_type = FundType::Unknown;
                     token_address = format!("{:?}", log.token);
                 }
 
@@ -68,10 +72,10 @@ where
                     let msg = UserOpMessage {
                         org_id: None,
                         credential_id: None,
-                        paymaster_mode: Some(paymaster_type.clone()),
+                        paymaster_mode: Some(paymaster_mode.clone()),
                         paymaster_id: None,
                         token_address: Some(token_address),
-                        fund_type: Some(paymaster_type.to_fund_type()),
+                        fund_type: Some(fund_type),
                         chain_id: event.chain_id,
                         policy_id: None,
                         native_usd_price: None,
@@ -93,8 +97,8 @@ where
                     };
                     // ✅ Update Redis with info
                     if matches!(
-                        paymaster_type,
-                        PaymasterMode::SponsorshipPrepaid | PaymasterMode::SponsorshipPostpaid
+                        paymaster_mode,
+                        PaymasterMode::Sponsorship
                     ) {
                             let redis_payload = UserOpPolicyData {
                             policy_id: None,

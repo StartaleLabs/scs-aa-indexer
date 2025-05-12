@@ -3,7 +3,7 @@ use std::sync::Arc;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::ClientConfig;
 use rdkafka::message::Message;
-use crate::model::paymaster_type::PaymasterMode;
+use crate::model::paymaster_mode::PaymasterMode;
 use crate::{
     model::{user_op_policy::UserOpPolicyData, user_op::UserOpMessage},
     storage::Storage,
@@ -43,7 +43,7 @@ where
                                 // ✅ 1. Update Redis
                                 if matches!(
                                     event.paymaster_mode,
-                                    Some(PaymasterMode::SponsorshipPrepaid | PaymasterMode::SponsorshipPostpaid)
+                                    Some(PaymasterMode::Sponsorship)
                                 ) {
                                     if let Some(policy_id) = event.policy_id.clone() {
                                         tracing::info!("🟢 Updating Redis with policy_id: {}", policy_id);

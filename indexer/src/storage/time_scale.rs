@@ -34,6 +34,7 @@ impl Storage for TimescaleStorage {
         let event_time = msg.timestamp.parse::<DateTime<Utc>>().unwrap_or_else(|_| Utc::now());
         let status_str = msg.status.to_string();
         let paymaster_mode = msg.paymaster_mode.as_ref().map(|m| m.to_string());
+        let fund_type = msg.fund_type.as_ref().map(|f| f.to_string());
 
         tracing::info!("🟢 Upserting UserOpMessage with hash: {}", user_op_hash);
         tracing::debug!("- useropmessage: {}", serde_json::to_string(&msg).unwrap_or_default());
@@ -147,7 +148,7 @@ impl Storage for TimescaleStorage {
                 .bind(&coalesced_usd_amount)
                 .bind(&coalesced_native_price)
                 .bind(&account_deployed)
-                .bind(&msg.fund_type)
+                .bind(&fund_type)
                 .bind(&user_op_hash)
                 .execute(&self.pool)
                 .await?;
@@ -171,7 +172,7 @@ impl Storage for TimescaleStorage {
             .bind(&msg.org_id)
             .bind(&msg.credential_id)
             .bind(&paymaster_mode)
-            .bind(&msg.fund_type)
+            .bind(&fund_type)
             .bind(&msg.paymaster_id)
             .bind(&status_str)
             .bind(&msg.data_source)
