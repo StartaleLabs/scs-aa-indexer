@@ -9,4 +9,3 @@ pub struct UserOpPolicyData {
     pub sender: Option<String>,
     pub enabled_limits: Option<Vec<String>>,
 }
-
