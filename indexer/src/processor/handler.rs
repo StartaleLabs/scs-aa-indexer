@@ -4,7 +4,7 @@ use alloy_sol_types::SolEvent;
 use alloy::primitives::Log as AlloyLog;
 use chrono::Utc;
 use indexer::events::events::{
-    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens
+    GasBalanceDeducted, RefundProcessed, UserOperationEvent, UserOperationSponsored, PaidGasInTokens, UserOperationSponsoredForPostpaid
 };
 use serde_json::json;
 use crate::{
@@ -34,14 +34,18 @@ where
                 let prev_log = AlloyLog::from(prev_event.log);
 
                 let mut meta = serde_json::Map::new();
-                let mut paymaster_type = PaymasterMode::UNKNOWN;
+                let mut paymaster_type = PaymasterMode::Unknown;
                 let mut token_address = String::new();
 
                 if let Ok(log) = GasBalanceDeducted::decode_log(&prev_log, true) {
                     meta.insert("deductedUser".to_string(), json!(log.user.to_string()));
                     meta.insert("deductedAmount".to_string(), json!(log.amount.to_string()));
                     meta.insert("premium".to_string(), json!(log.premium.to_string()));
-                    paymaster_type = PaymasterMode::SPONSORSHIP;
+                    paymaster_type = PaymasterMode::SponsorshipPrepaid;
+                }
+
+                if let Ok(_) = UserOperationSponsoredForPostpaid::decode_log(&prev_log, true) {
+                    paymaster_type = PaymasterMode::SponsorshipPostpaid;
                 }
 
                 if let Ok(log) = PaidGasInTokens::decode_log(&prev_log, true) {
@@ -50,7 +54,7 @@ where
                     meta.insert("tokenCharge".to_string(), json!(log.tokenCharge.to_string()));
                     meta.insert("appliedMarkup".to_string(), json!(log.appliedMarkup.to_string()));
                     meta.insert("exchangeRate".to_string(), json!(log.exchangeRate.to_string()));
-                    paymaster_type = PaymasterMode::TOKEN;
+                    paymaster_type = PaymasterMode::Token;
                     token_address = format!("{:?}", log.token);
                 }
 
@@ -88,8 +92,11 @@ where
                         meta_data: Some(json!(meta)),
                     };
                     // ✅ Update Redis with info
-                    if paymaster_type == PaymasterMode::SPONSORSHIP {
-                        let redis_payload = UserOpPolicyData {
+                    if matches!(
+                        paymaster_type,
+                        PaymasterMode::SponsorshipPrepaid | PaymasterMode::SponsorshipPostpaid
+                    ) {
+                            let redis_payload = UserOpPolicyData {
                             policy_id: None,
                             native_usd_price: None,
                             actual_gas_cost: Some(log.actualGasCost.to_string()),

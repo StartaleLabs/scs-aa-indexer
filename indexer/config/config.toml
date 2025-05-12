@@ -22,7 +22,7 @@ events = [
 name = "Sponsorship_Post_Paymaster"
 address = "0x159dd1e396b655b683603ca6eaa7e78708c0f6af"
 events = [
-    { signature = "a329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
+    { signature = "0xa329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
 ]
 
 [[chains.minato.contracts]]

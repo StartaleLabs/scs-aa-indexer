@@ -41,7 +41,10 @@ where
                         match serde_json::from_str::<UserOpMessage>(payload) {
                             Ok(event) => {
                                 // ✅ 1. Update Redis
-                                if matches!(event.paymaster_mode, Some(PaymasterMode::SPONSORSHIP)) {
+                                if matches!(
+                                    event.paymaster_mode,
+                                    Some(PaymasterMode::SponsorshipPrepaid | PaymasterMode::SponsorshipPostpaid)
+                                ) {
                                     if let Some(policy_id) = event.policy_id.clone() {
                                         tracing::info!("🟢 Updating Redis with policy_id: {}", policy_id);
                                         let redis_payload = UserOpPolicyData {
