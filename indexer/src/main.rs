@@ -65,6 +65,7 @@ async fn main() {
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_topics = config.storage.kafka_topics.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
+    
     spawn_safe(async move {
         start_kafka_consumer(
             &kafka_broker,

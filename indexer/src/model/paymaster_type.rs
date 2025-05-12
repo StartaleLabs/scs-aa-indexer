@@ -5,17 +5,30 @@ use serde::{Deserialize, Serialize};
 #[derive(sqlx::Type)]
 #[sqlx(type_name = "paymaster_mode", rename_all = "UPPERCASE")]
 pub enum PaymasterMode {
-    SPONSORSHIP,
-    TOKEN,
-    UNKNOWN,
+    SponsorshipPrepaid,
+    SponsorshipPostpaid,
+    Token,
+    Unknown,
 }
 
 impl ToString for PaymasterMode {
     fn to_string(&self) -> String {
         match self {
-            PaymasterMode::SPONSORSHIP => "SPONSORSHIP".to_string(),
-            PaymasterMode::TOKEN => "TOKEN".to_string(),
-            PaymasterMode::UNKNOWN => "UNKNOWN".to_string(),
+            PaymasterMode::SponsorshipPrepaid => "SPONSORSHIP_PREPAID".to_string(),
+            PaymasterMode::SponsorshipPostpaid => "SPONSORSHIP_POSTPAID".to_string(),
+            PaymasterMode::Token => "TOKEN".to_string(),
+            PaymasterMode::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}
+
+impl PaymasterMode {
+    pub fn to_fund_type(&self) -> String {
+        match self {
+            PaymasterMode::SponsorshipPrepaid => "SELF_FUNDED".to_string(),
+            PaymasterMode::SponsorshipPostpaid => "MANAGED".to_string(),
+            PaymasterMode::Token => "USER_PAID".to_string(),
+            PaymasterMode::Unknown => "UNKNOWN".to_string(),
         }
     }
 }
