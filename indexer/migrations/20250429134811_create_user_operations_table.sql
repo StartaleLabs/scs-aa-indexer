@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     applied_markup NUMERIC,
     exchange_rate NUMERIC,
 
+    account_deployed BOOLEAN,          -- Whether the account was deployed in this transaction
 
     -- Original metadata (still useful for extensibility)
     metadata JSONB NOT NULL,
