@@ -33,7 +33,6 @@ pub enum Status {
     #[serde(other)]
     Unknown,
 }
-
 #[derive(Debug, FromRow)]
 pub struct UserOperationRecord {
     pub status: Option<String>,

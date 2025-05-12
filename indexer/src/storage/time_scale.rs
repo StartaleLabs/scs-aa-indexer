@@ -79,17 +79,16 @@ impl Storage for TimescaleStorage {
             .and_then(|v| v.as_object())
             .map_or((None, None, None, None, None, None, None, None, None), |m| extract_meta_fields(m));
 
-        let factory_present = msg.user_op.get("factory")
+        // Heuristic for account deployment: assumes if either `factory` or `factoryData` is present, deployment was intended.
+        let account_deployed = msg.user_op.get("factory")
+            .and_then(|v| v.as_str())
+            .map(|s| !s.is_empty() && s != "0x")
+            .unwrap_or(false)
+            ||
+            msg.user_op.get("factoryData")
             .and_then(|v| v.as_str())
             .map(|s| !s.is_empty() && s != "0x")
             .unwrap_or(false);
-
-        let factory_data_present = msg.user_op.get("factoryData")
-            .and_then(|v| v.as_str())
-            .map(|s| !s.is_empty() && s != "0x")
-            .unwrap_or(false);
-
-        let account_deployed = factory_present || factory_data_present;
 
         if let Some(e) = existing {
             let current_status = Status::from_str_case_insensitive(e.status.as_deref().unwrap_or_default());
