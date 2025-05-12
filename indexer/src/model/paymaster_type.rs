@@ -11,6 +11,7 @@ pub enum PaymasterMode {
     SponsorshipPostpaid,
     #[serde(rename = "TOKEN")]
     Token,
+    #[serde(rename = "UNKNOWN")]
     Unknown,
 }
 
