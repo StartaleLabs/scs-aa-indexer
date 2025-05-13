@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     -- Paymaster Information
     paymaster_mode VARCHAR(20),
     paymaster_id VARCHAR(30),
-    fund_type VARCHAR(20),
 
     -- Status + Source
     status VARCHAR(10) NOT NULL,

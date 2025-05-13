@@ -11,7 +11,7 @@ active= true
 
 [[chains.minato.contracts]]
 name = "Sponsorship_Pre_Paymaster"
-address = "0x20E8677aCB27BC0dC3BCA61f981324560cB77066"
+address = "0x1F34E9253395df78bA8545d54e0a1576010cC025"
 events = [
     { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
     { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
@@ -27,7 +27,7 @@ events = [
 
 [[chains.minato.contracts]]
 name = "Token Paymaster"
-address = "0xcEf7da45a09B17D77e33FC32e5D24Ef1D30B68E3"
+address = "0x9c1B42ECaC817D50ca93c8fA5A60cE0F5374595A"
 events = [
     { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
 ]

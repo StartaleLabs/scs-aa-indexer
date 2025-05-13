@@ -13,7 +13,6 @@ pub struct UserOpMessage {
     pub paymaster_id: Option<String>,
     pub policy_id: Option<String>,
     pub token_address: Option<String>,
-    pub fund_type: Option<String>,
     pub chain_id: u32,
     pub status: Status,
     pub data_source: Option<String>,

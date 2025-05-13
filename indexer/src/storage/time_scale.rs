@@ -136,8 +136,7 @@ impl Storage for TimescaleStorage {
                         usd_amount = COALESCE(usd_amount, $6),
                         native_usd_price = COALESCE(native_usd_price, $7),
                         account_deployed = COALESCE(account_deployed, $8),
-                        fund_type = COALESCE(fund_type, $9)
-                    WHERE user_op_hash = $10"
+                    WHERE user_op_hash = $9"
                 )
                 .bind(&msg.org_id)
                 .bind(&paymaster_mode)
@@ -147,7 +146,6 @@ impl Storage for TimescaleStorage {
                 .bind(&coalesced_usd_amount)
                 .bind(&coalesced_native_price)
                 .bind(&account_deployed)
-                .bind(&msg.fund_type)
                 .bind(&user_op_hash)
                 .execute(&self.pool)
                 .await?;
@@ -156,12 +154,12 @@ impl Storage for TimescaleStorage {
             sqlx::query(
                 "INSERT INTO pm_user_operations \
                  (time, chain_id, user_op_hash, user_operation, org_id, credential_id, paymaster_mode, \
-                  fund_type, paymaster_id, status, data_source, \
+                  paymaster_id, status, data_source, \
                   actual_gas_cost, actual_gas_used, deducted_user, deducted_amount, usd_amount, \
                   token, premium, token_charge, applied_markup, exchange_rate, native_usd_price, metadata, account_deployed) \
                  VALUES (\
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,\
-                    $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24\
+                    $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23\
                  )"
             )
             .bind(&event_time)
@@ -171,7 +169,6 @@ impl Storage for TimescaleStorage {
             .bind(&msg.org_id)
             .bind(&msg.credential_id)
             .bind(&paymaster_mode)
-            .bind(&msg.fund_type)
             .bind(&msg.paymaster_id)
             .bind(&status_str)
             .bind(&msg.data_source)
