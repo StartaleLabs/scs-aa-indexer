@@ -8,7 +8,7 @@ sol! {
     event UserOperationSponsored(bytes32 indexed userOpHash, address indexed user);
 
     #[derive(Debug, Serialize)] 
-    event GasBalanceDeducted(address indexed user, uint256 amount, uint256 premium, uint8 mode);
+    event GasBalanceDeducted(address indexed user, uint256 amount, uint256 premium);
 
     #[derive(Debug, Serialize)] 
     event RefundProcessed(address indexed user, uint256 amount);

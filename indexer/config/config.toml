@@ -13,7 +13,7 @@ active= true
 name = "Sponsorship_Pre_Paymaster"
 address = "0x1F34E9253395df78bA8545d54e0a1576010cC025"
 events = [
-    { signature = "0xb51885f42df18ff2d99621fa3752090f501b08a1b746ad11ecc8fa00e068b1db", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256", "uint8"] },
+    { signature = "0x683b3fc4c8726e960b5b0aa3838c1071e2a9b7045fcd4dfc953fc1092923f537", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256"] },
     { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
     { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
 ]
