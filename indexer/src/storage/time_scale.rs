@@ -135,7 +135,7 @@ impl Storage for TimescaleStorage {
                         metadata = metadata || $5::jsonb,
                         usd_amount = COALESCE(usd_amount, $6),
                         native_usd_price = COALESCE(native_usd_price, $7),
-                        account_deployed = COALESCE(account_deployed, $8),
+                        account_deployed = COALESCE(account_deployed, $8)
                     WHERE user_op_hash = $9"
                 )
                 .bind(&msg.org_id)
