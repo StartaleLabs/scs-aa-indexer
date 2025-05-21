@@ -8,6 +8,8 @@ chain_id= 1946
 block_time= 2
 polling_blocks= 5 
 active= true
+reorg_buffer=6
+use_finalized = false
 
 [[chains.minato.contracts]]
 name = "Sponsorship_Pre_Paymaster"

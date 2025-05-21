@@ -83,12 +83,13 @@ async fn main() {
             let log_sender = log_sender.clone();
             let chain_clone = chain.clone();
             let chain_name_clone = chain_name.clone();
+            let app_for_chain = Arc::clone(&indexer_app);
 
             spawn_safe(async move {
                 // this loop ensures the listener restarts if it panics
                 loop {
                     let result = AssertUnwindSafe(async {
-                        let event_listener = EventListener::new(&rpc_url).await;
+                        let event_listener: EventListener<TimescaleStorage, RedisCoordinator> = EventListener::new(&rpc_url, Arc::clone(&app_for_chain)).await;
                         loop {
                             println!("🔍 Listening for events on {}...", chain_name_clone);
                             event_listener.listen_events(&chain_clone, log_sender.clone()).await;

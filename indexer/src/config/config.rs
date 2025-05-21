@@ -28,6 +28,8 @@ pub struct ChainConfig {
     pub chain_id: u32,
     pub block_time: u64,
     pub polling_blocks: u64,
+    pub reorg_buffer: u64,
+    pub use_finalized: bool,
     pub contracts: Vec<ContractConfig>,
 }
 
