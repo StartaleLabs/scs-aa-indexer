@@ -90,7 +90,7 @@ async fn main() {
                         let event_listener: EventListener<TimescaleStorage, RedisCoordinator> =
                             EventListener::new(&rpc_url, Arc::clone(&app_for_chain)).await;
                         loop {
-                            println!("🔍 Listening for events on {}...", chain_name_clone);
+                            tracing::info!("🔍 Listening for events on {}...", chain_name_clone);
                             event_listener
                                 .listen_events(&chain_clone, log_sender.clone())
                                 .await;

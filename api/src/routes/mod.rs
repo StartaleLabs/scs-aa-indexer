@@ -17,19 +17,19 @@ pub async fn get_user_op(
     .fetch_one(&db)
     .await;
 
-    println!("🔍 Query result: {:?}", query_result);
+    tracing::info!("🔍 Query result: {:?}", query_result);
 
     match query_result {
         Ok(record) => {
-            println!("✅ Found record for hash: {}", user_op_hash);
+            tracing::info!("✅ Found record for hash: {}", user_op_hash);
             Ok(Json(record))
         },
         Err(sqlx::Error::RowNotFound) => {
-            println!("⚠️ No record found for hash: {}", user_op_hash);
+            tracing::error!("⚠️ No record found for hash: {}", user_op_hash);
             Err(StatusCode::NOT_FOUND)
         },
         Err(e) => {
-            eprintln!("❌ DB error while fetching hash {}: {:?}", user_op_hash, e);
+            tracing::error!("❌ DB error while fetching hash {}: {:?}", user_op_hash, e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

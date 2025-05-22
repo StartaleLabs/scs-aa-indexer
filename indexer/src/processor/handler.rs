@@ -103,13 +103,13 @@ where
                             sender: None,
                             enabled_limits: None, 
                         };
-                        println!("redis onchain payload {}", serde_json::to_string(&redis_payload).unwrap());
+                        tracing::info!("redis onchain payload {}", serde_json::to_string(&redis_payload).unwrap());
                         if let Err(e) = app.cache.update_userop_policy(&msg.user_op_hash, redis_payload).await {
                             tracing::error!("❌ Failed to update Redis with indexer data: {:?}", e);
                         }
                     }
                     // ✅ Update Timescale with info
-                    println!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
+                    tracing::info!("userOpMessage {}", serde_json::to_string(&msg).unwrap());
                     app.storage.upsert_user_op_message(msg).await.unwrap_or_else(|e| {
                         tracing::error!("❌ Failed to upsert UserOpMessage into Storage: {:?}", e);
                     });

@@ -29,7 +29,7 @@ events = [
 
 [[chains.minato.contracts]]
 name = "Token Paymaster"
-address = "0x9c1B42ECaC817D50ca93c8fA5A60cE0F5374595A"
+address = "0xC7d6d41DeDbfB365469FF2FFB2c89c11aC41d4f0"
 events = [
     { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
 ]

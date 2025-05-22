@@ -27,7 +27,7 @@ async fn main() {
     let port = env::var("API_PORT").unwrap_or_else(|_| "8081".to_string());
     let addr = format!("{host}:{port}");
 
-    println!("🔧 Starting API server on {addr}");
+    tracing::info!("🔧 Starting API server on {addr}");
     let listener = TcpListener::bind(&addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
