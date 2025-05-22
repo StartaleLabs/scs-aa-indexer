@@ -1,28 +1,28 @@
-mod config;
-mod listener;
-mod processor;
-mod storage;
-mod consumer;
 mod app;
 mod cache;
+mod config;
+mod consumer;
+mod listener;
 mod model;
+mod processor;
+mod storage;
 mod utils;
+use futures_util::FutureExt;
+use sqlx::migrate::Migrator;
 use std::future::Future;
 use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
-use futures_util::FutureExt;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use tracing_subscriber;
-use sqlx::migrate::Migrator;
 
+use app::AppContext;
+use cache::redis::RedisCoordinator;
+use config::config::Config;
 use consumer::kafka_consumer::start_kafka_consumer;
 use listener::listener::EventListener;
 use processor::processor::ProcessEvent;
-use config::config::Config;
-use app::AppContext;
 use storage::time_scale::TimescaleStorage;
-use cache::redis::RedisCoordinator;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
@@ -32,7 +32,7 @@ where
 {
     tokio::spawn(async move {
         if let Err(err) = AssertUnwindSafe(fut).catch_unwind().await {
-            eprintln!("🚨 A task panicked: {:?}", err);
+            tracing::error!("🚨 A task panicked: {:?}", err);
         }
     });
 }
@@ -42,7 +42,10 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let config = Config::load();
-    println!("🔧 Configuration loaded, starting indexer: {:?}", &config.general.indexer_name);
+    tracing::info!(
+        "🔧 Configuration loaded, starting indexer: {:?}",
+        &config.general.indexer_name
+    );
 
     let (log_sender, log_receiver) = mpsc::channel(100);
 
@@ -52,7 +55,7 @@ async fn main() {
 
     // ✅ DB migration
     MIGRATOR.run(db.get_pg_pool()).await.unwrap_or_else(|e| {
-        eprintln!("❌ DB migration failed: {:?}", e);
+        tracing::error!("❌ DB migration failed: {:?}", e);
         std::process::exit(1); // Fail fast
     });
 
@@ -65,14 +68,9 @@ async fn main() {
     let kafka_group_id = config.storage.kafka_group_id.clone();
     let kafka_topics = config.storage.kafka_topics.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
-    
+
     spawn_safe(async move {
-        start_kafka_consumer(
-            &kafka_broker,
-            &kafka_topics[0],
-            &kafka_group_id,
-            kafka_app,
-        );
+        start_kafka_consumer(&kafka_broker, &kafka_topics[0], &kafka_group_id, kafka_app);
     });
 
     // ✅ Spawn per-chain listeners
@@ -83,27 +81,34 @@ async fn main() {
             let log_sender = log_sender.clone();
             let chain_clone = chain.clone();
             let chain_name_clone = chain_name.clone();
+            let app_for_chain = Arc::clone(&indexer_app);
 
             spawn_safe(async move {
                 // this loop ensures the listener restarts if it panics
                 loop {
                     let result = AssertUnwindSafe(async {
-                        let event_listener = EventListener::new(&rpc_url).await;
+                        let event_listener: EventListener<TimescaleStorage, RedisCoordinator> =
+                            EventListener::new(&rpc_url, Arc::clone(&app_for_chain)).await;
                         loop {
-                            println!("🔍 Listening for events on {}...", chain_name_clone);
-                            event_listener.listen_events(&chain_clone, log_sender.clone()).await;
+                            tracing::info!("🔍 Listening for events on {}...", chain_name_clone);
+                            event_listener
+                                .listen_events(&chain_clone, log_sender.clone())
+                                .await;
                             sleep(Duration::from_secs(poll_interval)).await;
                         }
                     })
                     .catch_unwind()
                     .await;
-            
+
                     if let Err(err) = result {
-                        eprintln!("🔥 Chain listener for {} panicked, restarting... {:?}", chain_name_clone, err);
+                        tracing::error!(
+                            "🔥 Chain listener for {} panicked, restarting... {:?}",
+                            chain_name_clone, err
+                        );
                         sleep(Duration::from_secs(5)).await;
                     }
                 }
-            });            
+            });
         }
     }
 

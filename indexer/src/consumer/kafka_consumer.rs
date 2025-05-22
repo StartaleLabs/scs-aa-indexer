@@ -30,7 +30,7 @@ where
         .expect("Failed to create Kafka consumer");
 
     consumer.subscribe(&[topic]).expect("Failed to subscribe to topic");
-    println!("🟢 Kafka consumer subscribed to topic: {}", topic);
+    tracing::info!("🟢 Kafka consumer subscribed to topic: {}", topic);
 
     tokio::spawn(async move {
         loop {

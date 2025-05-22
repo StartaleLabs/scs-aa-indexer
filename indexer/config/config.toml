@@ -8,10 +8,22 @@ chain_id= 1946
 block_time= 2
 polling_blocks= 5 
 active= true
+reorg_buffer=6
+use_finalized = false
+
+[chains.soneium]
+# Import RPC url from .env file
+rpc_url = ""
+chain_id= 1848
+block_time= 2
+polling_blocks= 5 
+active= true
+reorg_buffer=6
+use_finalized = false
 
 [[chains.minato.contracts]]
 name = "Sponsorship_Pre_Paymaster"
-address = "0x1F34E9253395df78bA8545d54e0a1576010cC025"
+address = "0x00000016a9B189992551854a5eFc14E5EeF7C46b"
 events = [
     { signature = "0x683b3fc4c8726e960b5b0aa3838c1071e2a9b7045fcd4dfc953fc1092923f537", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256"] },
     { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
@@ -20,19 +32,49 @@ events = [
 
 [[chains.minato.contracts]]
 name = "Sponsorship_Post_Paymaster"
-address = "0x159dd1e396b655b683603ca6eaa7e78708c0f6af"
+address = "0x0000007D3cD3002Cb096568bA3cC1319C03f2A55"
 events = [
     { signature = "0xa329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
 ]
 
 [[chains.minato.contracts]]
 name = "Token Paymaster"
-address = "0x9c1B42ECaC817D50ca93c8fA5A60cE0F5374595A"
+address = "0x000000AF44af54512581c0c05aeCAb9BDfC0bA26"
 events = [
     { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
 ]
 
 [[chains.minato.contracts]]
+name = "Entrypoint_V0.7"
+address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+events = [
+    { signature = "0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f", name = "UserOperationEvent", params = ["bytes32", "address", "address", "uint256", "bool", "uint256", "uint256"] }
+]
+
+[[chains.soneium.contracts]]
+name = "Sponsorship_Pre_Paymaster"
+address = "0x00000016a9B189992551854a5eFc14E5EeF7C46b"
+events = [
+    { signature = "0x683b3fc4c8726e960b5b0aa3838c1071e2a9b7045fcd4dfc953fc1092923f537", name = "GasBalanceDeducted", params = ["address", "uint256", "uint256"] },
+    { signature = "0x94139248bcc22ab7c689ff34422119f69e04a937052f28621797cb5f69c45af7", name = "UserOperationSponsored", params = ["bytes32", "address"] },
+    { signature = "0x3367befd2b2f39615cd79917c2153263c4af1d3945ec003e5d5bfc13a8d85833", name = "RefundProcessed", params = ["address", "uint256"] }
+]
+
+[[chains.soneium.contracts]]
+name = "Sponsorship_Post_Paymaster"
+address = "0x0000007D3cD3002Cb096568bA3cC1319C03f2A55"
+events = [
+    { signature = "0xa329fa2c5008b530bd55ccb366edd98ae4d5af83c4c0feefd377590ab68f3264", name = "UserOperationSponsoredForPostpaid", params = ["bytes32", "address"] },
+]
+
+[[chains.soneium.contracts]]
+name = "Token Paymaster"
+address = "0x000000AF44af54512581c0c05aeCAb9BDfC0bA26"
+events = [
+    { signature = "0x652a3e2ecdaeb77e89486cb74be65c4579b831f00b22f6176aca49f3893827fd", name = "PaidGasInTokens", params = ["address", "address", "uint256", "uint48", "uint256"] }
+]
+
+[[chains.soneium.contracts]]
 name = "Entrypoint_V0.7"
 address = "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
 events = [

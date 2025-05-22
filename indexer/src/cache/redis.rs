@@ -1,4 +1,4 @@
-use redis::AsyncCommands;
+use redis::{AsyncCommands, RedisError};
 use serde_json;
 use crate::model::user_op_policy::UserOpPolicyData;
 use crate::cache::Cache;
@@ -70,6 +70,27 @@ impl Cache for RedisCoordinator {
             let _: () = conn.set_ex(&key, serialized, 600).await?;
         }
 
+        Ok(())
+    }
+
+    async fn get_last_synced_block(
+        &self,
+        chain_id: u32,
+    ) -> Result<Option<u64>, RedisError> {
+        let mut conn = self.redis.get_async_connection().await?;
+        let key = format!("sync_block:{}", chain_id);
+        let block: Option<u64> = conn.get(key).await.ok();
+        Ok(block)
+    }
+
+    async fn set_last_synced_block(
+        &self,
+        chain_id: u32,
+        block_number: u64,
+    ) -> Result<(), Error> {
+        let mut conn = self.redis.get_async_connection().await?;
+        let key = format!("sync_block:{}", chain_id);
+        conn.set::<_, _, ()>(key, block_number).await.map_err(Error::from)?;
         Ok(())
     }
 }
