@@ -32,7 +32,7 @@ where
 {
     tokio::spawn(async move {
         if let Err(err) = AssertUnwindSafe(fut).catch_unwind().await {
-            eprintln!("🚨 A task panicked: {:?}", err);
+            tracing::error!("🚨 A task panicked: {:?}", err);
         }
     });
 }
@@ -42,7 +42,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let config = Config::load();
-    println!(
+    tracing::info!(
         "🔧 Configuration loaded, starting indexer: {:?}",
         &config.general.indexer_name
     );
@@ -55,7 +55,7 @@ async fn main() {
 
     // ✅ DB migration
     MIGRATOR.run(db.get_pg_pool()).await.unwrap_or_else(|e| {
-        eprintln!("❌ DB migration failed: {:?}", e);
+        tracing::error!("❌ DB migration failed: {:?}", e);
         std::process::exit(1); // Fail fast
     });
 
@@ -101,7 +101,7 @@ async fn main() {
                     .await;
 
                     if let Err(err) = result {
-                        eprintln!(
+                        tracing::error!(
                             "🔥 Chain listener for {} panicked, restarting... {:?}",
                             chain_name_clone, err
                         );
