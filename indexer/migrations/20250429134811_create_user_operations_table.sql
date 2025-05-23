@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS pm_user_operations (
     user_operation JSONB NOT NULL,
     
     -- Ownership and Access
-    org_id VARCHAR(30),
+    org_id VARCHAR(32),
     credential_id VARCHAR(30),
 
     -- Paymaster Information
