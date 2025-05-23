@@ -14,7 +14,7 @@ use_finalized = false
 [chains.soneium]
 # Import RPC url from .env file
 rpc_url = ""
-chain_id= 1848
+chain_id= 1868
 block_time= 2
 polling_blocks= 5 
 active= true
