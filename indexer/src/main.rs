@@ -61,17 +61,33 @@ async fn main() {
 
     // ✅ Wrap both into shared AppContext
     let app: Arc<_> = Arc::new(AppContext::new(db, redis));
-    let kafka_app = Arc::clone(&app);
     let indexer_app = Arc::clone(&app);
 
     // ✅ Start Kafka consumer
-    let kafka_group_id = config.storage.kafka_group_id.clone();
-    let kafka_topics = config.storage.kafka_topics.clone();
     let kafka_broker = config.storage.kafka_broker.clone();
+    let kafka_topics = config.storage.kafka_topics.clone();
+    let kafka_group_id = config.storage.kafka_group_id.clone();
 
+    tracing::info!("🟢 Starting Kafka consumer...");
     spawn_safe(async move {
-        start_kafka_consumer(&kafka_broker, &kafka_topics[0], &kafka_group_id, kafka_app);
+        loop {
+            let kafka_app = Arc::clone(&app);
+            let result = AssertUnwindSafe(
+                start_kafka_consumer(&kafka_broker, &kafka_topics[0], &kafka_group_id, kafka_app)
+            )
+            .catch_unwind()
+            .await;
+    
+            if let Err(err) = result {
+                tracing::error!("🔥 Kafka consumer panicked, restarting... {:?}", err);
+            } else {
+                tracing::warn!("⚠️ Kafka consumer exited unexpectedly, restarting...");
+            }
+    
+            sleep(Duration::from_secs(5)).await;
+        }
     });
+    
 
     // ✅ Spawn per-chain listeners
     for (chain_name, chain) in config.chains.clone() {

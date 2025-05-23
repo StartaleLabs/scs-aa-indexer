@@ -67,7 +67,7 @@ impl Cache for RedisCoordinator {
             let _: () = conn.del(&key).await?;
         } else {
             let serialized = serde_json::to_string(&merged)?;
-            let _: () = conn.set_ex(&key, serialized, 600).await?;
+            let _: () = conn.set_ex(&key, serialized, 1800).await?;
         }
 
         Ok(())
