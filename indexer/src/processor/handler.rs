@@ -1,4 +1,4 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::{HashMap, HashSet}, sync::Arc};
 
 use alloy_sol_types::SolEvent;
 use alloy::primitives::{Address, Log as AlloyLog};
@@ -18,7 +18,7 @@ pub async fn process_event<S, C>(
     event: &Event,
     previous_event: &mut Option<Event>,
     app: Arc<AppContext<S, C>>,
-    allowed_contracts: &HashSet<Address>,
+    allowed_contracts: &HashMap<u32, HashSet<Address>>,
 )
 where
     S: Storage + Send + Sync + 'static,
@@ -34,10 +34,18 @@ where
             let user_op_log = AlloyLog::from(event.log.clone());
             if let Ok(log) = UserOperationEvent::decode_log(&user_op_log, false) {
                 // ⚠️ Filter only events involving our contracts
-                if !allowed_contracts.contains(&log.paymaster) {
-                    tracing::warn!("⚠️ Ignoring UserOperationEvent from unknown paymaster: {:?}", log.paymaster);
+                let chain_id = event.chain_id;
+                let paymaster = log.paymaster;
+                if let Some(allowed) = allowed_contracts.get(&chain_id) {
+                    if !allowed.contains(&paymaster) {
+                        tracing::warn!("⛔ Ignoring UserOperationEvent with disallowed paymaster: {:?} for chain {}", paymaster, chain_id);
+                        return;
+                    }
+                } else {
+                    tracing::warn!("⛔ No allowed contracts found for chain {}. Skipping.", chain_id);
                     return;
                 }
+                
                 // Prepare metadata
                 let mut meta = serde_json::Map::new();
                 let mut paymaster_type = PaymasterMode::Unknown;

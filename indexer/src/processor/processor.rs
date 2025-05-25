@@ -24,7 +24,7 @@ where
 {
     event_map: HashMap<B256, (String, Vec<String>)>,
     app: Arc<AppContext<S, C>>,
-    allowed_contracts: HashSet<Address>,
+    allowed_contracts: HashMap<u32, HashSet<Address>>,
 }
 
 impl<S, C> ProcessEvent<S, C>
@@ -35,9 +35,10 @@ where
     // **Initialize Processor with Dynamic Event Mapping**
     pub fn new(config: &Config, app:Arc<AppContext<S, C>>) -> Self {
         let mut event_map = HashMap::new();
-        let mut allowed_contracts = HashSet::new();
+        let mut allowed_contracts: HashMap<u32, HashSet<Address>> = HashMap::new();
         // 🔹 Iterate over all chains & their contracts
         for (_, chain) in &config.chains {
+            let chain_id = chain.chain_id;
             for contract in &chain.contracts {
                 for event in &contract.events {
                     let event_sig = B256::from_slice(
@@ -46,9 +47,9 @@ where
                     event_map.insert(event_sig, (event.name.clone(), event.params.clone()));
                 }
 
-                // Add paymaster contract address to allowed set
+                // Add contract address to allowed set
                 if let Ok(addr) = Address::from_str(&contract.address) {
-                    allowed_contracts.insert(addr);
+                    allowed_contracts.entry(chain_id).or_default().insert(addr);
                 }
             }
         }
