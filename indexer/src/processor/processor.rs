@@ -1,8 +1,9 @@
 
 use tokio::sync::mpsc;
-use alloy::primitives::B256;
+use alloy::primitives::{Address, B256};
 
-use std::collections::HashMap;
+use std::collections::{HashSet, HashMap};
+use std::str::FromStr;
 use std::sync::Arc;
 use alloy::hex;
 use crate::app::AppContext;
@@ -23,6 +24,7 @@ where
 {
     event_map: HashMap<B256, (String, Vec<String>)>,
     app: Arc<AppContext<S, C>>,
+    allowed_contracts: HashSet<Address>,
 }
 
 impl<S, C> ProcessEvent<S, C>
@@ -33,7 +35,7 @@ where
     // **Initialize Processor with Dynamic Event Mapping**
     pub fn new(config: &Config, app:Arc<AppContext<S, C>>) -> Self {
         let mut event_map = HashMap::new();
-
+        let mut allowed_contracts = HashSet::new();
         // 🔹 Iterate over all chains & their contracts
         for (_, chain) in &config.chains {
             for contract in &chain.contracts {
@@ -43,9 +45,14 @@ where
                     );
                     event_map.insert(event_sig, (event.name.clone(), event.params.clone()));
                 }
+
+                // Add paymaster contract address to allowed set
+                if let Ok(addr) = Address::from_str(&contract.address) {
+                    allowed_contracts.insert(addr);
+                }
             }
         }
-        Self { event_map, app }
+        Self { event_map, app, allowed_contracts }
     }
 
     // **Process Incoming Logs Dynamically**
@@ -56,7 +63,7 @@ where
             if let Some(event_signature) = event.log.topics().first() {
                 if let Some((event_name, _params)) = self.event_map.get(event_signature) {
                     tracing::info!("✅ Processing Event: {}", event_name);
-                    process_event(event_name, &event, &mut previous_event, Arc::clone(&self.app)).await;
+                    process_event(event_name, &event, &mut previous_event, Arc::clone(&self.app), &self.allowed_contracts).await;
                 } else {
                     tracing::info!("⚠️ Unknown event signature: {:?}", event_signature);
                 }
