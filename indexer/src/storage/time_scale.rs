@@ -100,15 +100,14 @@ impl Storage for TimescaleStorage {
 
             let update_query = sqlx::query(
                 "UPDATE pm_user_operations \
-                 SET status = $1, paymaster_mode = $2, data_source = $3,\
-                     metadata = metadata || $4::jsonb,\
-                     actual_gas_cost = $5, actual_gas_used = $6, deducted_user = $7,\
-                     deducted_amount = $8, usd_amount = $9, token = $10,\
-                     premium = $11, token_charge = $12, applied_markup = $13, exchange_rate = $14 \
-                 WHERE user_op_hash = $15"
+                 SET status = $1, data_source = $2,\
+                     metadata = metadata || $3::jsonb,\
+                     actual_gas_cost = $4, actual_gas_used = $5, deducted_user = $6,\
+                     deducted_amount = $7, usd_amount = $8, token = $9,\
+                     premium = $10, token_charge = $11, applied_markup = $12, exchange_rate = $13 \
+                 WHERE user_op_hash = $14"
             )
             .bind(&status_str)
-            .bind(&paymaster_mode)
             .bind(&msg.data_source)
             .bind(msg.meta_data.as_ref().unwrap_or(&serde_json::Value::Null))
             .bind(&actual_gas_cost)

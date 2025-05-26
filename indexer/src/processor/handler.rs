@@ -45,7 +45,6 @@ where
                     tracing::warn!("⛔ No allowed contracts found for chain {}. Skipping.", chain_id);
                     return;
                 }
-                
                 // Prepare metadata
                 let mut meta = serde_json::Map::new();
                 let mut paymaster_type = PaymasterMode::Unknown;
