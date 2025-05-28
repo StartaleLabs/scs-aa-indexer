@@ -4,7 +4,7 @@ use crate::model::user_op_policy::UserOpPolicyData;
 use crate::cache::Cache;
 use anyhow::Error;
 use async_trait::async_trait;
-use crate::utils::{calculate_usd_spent, parse_gas_value};
+use crate::utils::{calculate_usd_spent, parse_gas_value, append_usage_update_cmds};
 
 pub struct RedisCoordinator {
     redis: redis::Client,
@@ -117,27 +117,19 @@ impl RedisCoordinator {
         let gas = parse_gas_value(data.actual_gas_used.as_ref());
 
         let mut pipe = redis::pipe();
-    
+
         if enabled.contains(&"GLOBAL".to_string()) {
             tracing::info!("🔄 Updating global usage limits");
-            let global_prefix = format!("global:{}", policy_id);
-            pipe.cmd("INCRBY").arg(format!("{}:ops", global_prefix)).arg(1)
-                .cmd("INCRBY").arg(format!("{}:gas", global_prefix)).arg(gas)
-                .cmd("INCRBYFLOAT").arg(format!("{}:usd", global_prefix))
-                .arg(format!("{:.6}", usd_spent));
+            append_usage_update_cmds(&mut pipe, "global", policy_id, None, gas, usd_spent);
         }
-    
+
         if enabled.contains(&"USER".to_string()) {
             tracing::info!("🔄 Updating user-specific usage limits");
             if let Some(user) = data.sender.as_ref() {
-                let user_prefix = format!("user:{}:{}", policy_id, user);
-                pipe.cmd("INCRBY").arg(format!("{}:ops", user_prefix)).arg(1)
-                    .cmd("INCRBY").arg(format!("{}:gas", user_prefix)).arg(gas)
-                    .cmd("INCRBYFLOAT").arg(format!("{}:usd", user_prefix))
-                    .arg(format!("{:.6}", usd_spent));
+                append_usage_update_cmds(&mut pipe, "user", policy_id, Some(user), gas, usd_spent);
             }
         }
-    
+
         let _: () = pipe.query_async(conn).await?;
         tracing::info!("🔄 Updated usage (scopes: {:?}): ops+=1 gas+={} usd+={:.4}", enabled, gas, usd_spent);
         Ok(())
