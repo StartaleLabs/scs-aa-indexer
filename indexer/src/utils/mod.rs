@@ -58,6 +58,7 @@ pub fn append_usage_update_cmds(
     user: Option<&str>,
     gas: u64,
     usd_spent: f64,
+    gas_cost_wei: u64,
 ) {
     let prefix = match user {
         Some(u) => format!("{}:{}:{}", scope, policy_id, u),
@@ -67,11 +68,13 @@ pub fn append_usage_update_cmds(
     // Increment confirmed usage counters
     pipe.cmd("INCRBY").arg(format!("{}:ops", &prefix)).arg(1)
         .cmd("INCRBY").arg(format!("{}:gas", &prefix)).arg(gas)
-        .cmd("INCRBYFLOAT").arg(format!("{}:usd", &prefix)).arg(format!("{:.6}", usd_spent));
+        .cmd("INCRBYFLOAT").arg(format!("{}:usd", &prefix)).arg(format!("{:.6}", usd_spent))
+        .cmd("INCRBY").arg(format!("{}:wei", &prefix)).arg(gas_cost_wei);
 
     // Delete pending buffer keys
     pipe.cmd("DEL")
         .arg(format!("{}:pending_ops", &prefix))
         .arg(format!("{}:pending_gas", &prefix))
-        .arg(format!("{}:pending_usd", &prefix));
+        .arg(format!("{}:pending_usd", &prefix))
+        .arg(format!("{}:pending_wei", &prefix));
 }

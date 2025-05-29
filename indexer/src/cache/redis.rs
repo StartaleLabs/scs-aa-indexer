@@ -115,18 +115,17 @@ impl RedisCoordinator {
 
         let usd_spent = calculate_usd_spent(actual_gas_cost_str, usd_price_str).unwrap_or(0.0);
         let gas = parse_gas_value(data.actual_gas_used.as_ref());
+        let gas_cost_wei = parse_gas_value(data.actual_gas_cost.as_ref());
 
         let mut pipe = redis::pipe();
-
         if enabled.contains(&"GLOBAL".to_string()) {
             tracing::info!("🔄 Updating global usage limits");
-            append_usage_update_cmds(&mut pipe, "global", policy_id, None, gas, usd_spent);
+            append_usage_update_cmds(&mut pipe, "global", policy_id, None, gas, usd_spent, gas_cost_wei);
         }
-
         if enabled.contains(&"USER".to_string()) {
             tracing::info!("🔄 Updating user-specific usage limits");
             if let Some(user) = data.sender.as_ref() {
-                append_usage_update_cmds(&mut pipe, "user", policy_id, Some(user), gas, usd_spent);
+                append_usage_update_cmds(&mut pipe, "user", policy_id, Some(user), gas, usd_spent, gas_cost_wei);
             }
         }
 
